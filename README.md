@@ -12,11 +12,12 @@ out-of-order execution on modern microprocessors.
 	```apt install -y unzip libx11-dev libxft-dev libasound2-dev libxcursor-dev```
 2. Execute o script na raíz do repositório para instalar as dependências do simulador
 	`sh get_dep.sh`
-3. Execute com `./tfsim`
-		
+3. compile o simulador `make`
+4. Execute com `./tfsim`
+
 
 - Os valores iniciais de registradores e de memória são gerados aleatoriamente para cada execução. É possível alterá-los (assim como inserir a lista de instruções) por linha de comando ou pela barra de opções da interface. Por linha de comando, utilize:
-			
+
 
 		-  '-q' para fila de instruções
 		- '-i' para valores de registradores inteiros (32 valores)
@@ -41,8 +42,7 @@ DADD | BEQ |
 DADDI| BNE |
 DSUB | BGTZ |
 DSUBI| BLTZ |
-DMUL | BGEZ | 
+DMUL | BGEZ |
 DDIV| BLEZ |
 LD|
 SD|
-
