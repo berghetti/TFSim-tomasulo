@@ -19,7 +19,7 @@ OBJ = $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 CPPFLAGS += -I $(SYSTEMC_INCLUDE) -I $(NANA_INCLUDE)
 LDLFLAGS += -L $(NANA_LIB) -L $(SYSTEMC_LIB) -Wl,-rpath=$(SYSTEMC_LIB)
 
-CFLAGS += -std=c++17 -Wall 
+CFLAGS += -std=c++17 -Wall -ggdb -O0
 LIBS += -lnana -lX11 -lpthread -lrt -lXft -lpng -lasound -lfontconfig -lm -lsystemc
 
 .PHONY: all nofs clean
