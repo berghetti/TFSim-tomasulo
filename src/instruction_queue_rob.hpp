@@ -16,9 +16,12 @@ public:
     instruction_queue_rob(sc_module_name name, vector<string> inst_q,int rb_sz, nana::listbox &instr);
     void main();
     void leitura_rob();
+
+    bool queue_is_empty( void );
+
 private:
     unsigned int pc;
-    
+
     struct instr_q
     {
         string instruction;

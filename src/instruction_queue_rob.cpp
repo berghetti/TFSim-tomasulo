@@ -63,7 +63,7 @@ void instruction_queue_rob::leitura_rob()
         instructions.at(0).at(pc-1).select(false);
         replace_instructions(last_pc[index]-1,index);
         pc = last_pc[index]-1;
-        instruct_queue = last_instr[index]; 
+        instruct_queue = last_instr[index];
     }
     else if(ord[0] == "S" && ord.size() == 3) //realiza salto (especulado) e armazena informacoes pre-salto
     {
@@ -138,7 +138,7 @@ void instruction_queue_rob::add_instructions(unsigned int pos, vector<instr_q> i
     {
         if(i < sz)
         {
-            instruct_queue[i] = instr_vec[i-pos];   
+            instruct_queue[i] = instr_vec[i-pos];
             cat.at(i).text(ISS,"");
             cat.at(i).text(EXEC,"");
             cat.at(i).text(WRITE,"");
@@ -160,4 +160,10 @@ void instruction_queue_rob::add_instructions(unsigned int pos, vector<instr_q> i
         }
     }
     instructions.auto_draw(true);
+}
+
+// TODO: It'not OK
+bool instruction_queue_rob::queue_is_empty( void )
+{
+  return pc == instruct_queue.size();
 }
