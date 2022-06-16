@@ -1,7 +1,7 @@
 #include <nana/gui.hpp>
 #include "reorder_buffer.hpp"
 
-reorder_buffer::reorder_buffer(sc_module_name name,unsigned int sz,unsigned int pred_size, nana::listbox &gui, nana::listbox::cat_proxy instr_gui): 
+reorder_buffer::reorder_buffer(sc_module_name name,unsigned int sz,unsigned int pred_size, nana::listbox &gui, nana::listbox::cat_proxy instr_gui):
 sc_module(name),
 tam(sz),
 preditor(pred_size),
@@ -173,7 +173,7 @@ void reorder_buffer::leitura_issue()
     }
 }
 
-void reorder_buffer::new_rob_head() 
+void reorder_buffer::new_rob_head()
 {
     unsigned int instr_type;
     bool pred;
@@ -288,7 +288,7 @@ void reorder_buffer::leitura_adu()
             instr_queue_gui.at(ptrs[index-1]->instr_pos).text(WRITE,"X");
         }
         if(rob_buff[0]->entry == index && ptrs[index-1]->ready)
-            rob_head_value_event.notify(1,SC_NS); 
+            rob_head_value_event.notify(1,SC_NS);
         wait();
     }
 }
@@ -485,4 +485,16 @@ int reorder_buffer::instruction_pos_finder(string p)
             return i;
     }
     return -1;
+}
+
+bool reorder_buffer::rob_is_empty( void )
+{
+  unsigned int i = tam;
+  rob_slot **p = ptrs;
+
+  while(i--)
+    if ( p[i]->busy )
+      return false;
+
+  return true;
 }

@@ -44,14 +44,18 @@ void top::simple_mode(unsigned int nadd, unsigned int nmul,unsigned int nload,ma
     slb->out_mem(*mem_bus);
 
     rb->in(*rb_bus);
-    rb->out(*rb_bus);       
+    rb->out(*rb_bus);
     rb->in_cdb(*CDB);
 
     mem->in(*mem_bus);
     mem->out(*CDB);
 }
 
-void top::rob_mode(unsigned int nadd, unsigned int nmul,unsigned int nload,map<string,int> instruct_time, vector<string> instruct_queue, nana::listbox &table, nana::grid &mem_gui, nana::listbox &regs, nana::listbox &instr_gui, nana::label &ccount, nana::listbox &rob_gui)
+void
+top::rob_mode(unsigned int nadd, unsigned int nmul,unsigned int nload,
+             map<string,int> instruct_time, vector<string> instruct_queue,
+             nana::listbox &table, nana::grid &mem_gui, nana::listbox &regs,
+             nana::listbox &instr_gui, nana::label &ccount, nana::listbox &rob_gui)
 {
     int rob_size = 10; //Tamanho do REORDER BUFFER
     CDB = unique_ptr<bus>(new bus("CDB"));

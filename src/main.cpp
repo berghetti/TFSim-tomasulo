@@ -17,14 +17,21 @@ using std::vector;
 using std::map;
 using std::fstream;
 
+// defaults amount reserve stations
+#define N_RS_ADD 3
+#define N_RS_MUL 2
+#define N_RS_LS 2
+
 
 int sc_main(int argc, char *argv[])
 {
     using namespace nana;
     vector<string> instruction_queue;
-    int nadd,nmul,nls;
-    nadd = 3;
-    nmul = nls = 2;
+
+    int nadd = N_RS_ADD;
+    int nmul = N_RS_MUL;
+    int nls = N_RS_LS;
+
     std::vector<int> sizes;
     bool spec = false;
     bool fila = false;
@@ -38,7 +45,7 @@ int sc_main(int argc, char *argv[])
     listbox instruct(fm);
     listbox rob(fm);
     menubar mnbar(fm);
-    button botao(fm);
+    button start(fm);
     button btn_full_execute(fm);
     button clock_control(fm);
     button exit(fm);
@@ -52,12 +59,12 @@ int sc_main(int argc, char *argv[])
     // Novas instrucoes devem ser inseridas manualmente aqui
     map<string,int> instruct_time{{"DADD",4},{"DADDI",4},{"DSUB",6},{"DSUBI",6},{"DMUL",10},{"DDIV",16},{"MEM",2}};
     top top1("top");
-    botao.caption("Start");
+    start.caption("Start");
     clock_control.caption("Next Cycle");
     btn_full_execute.caption("Full Execute");
     exit.caption("Exit");
     plc["rst"] << table;
-    plc["btns"] << botao << clock_control << btn_full_execute << exit;
+    plc["btns"] << start << clock_control << btn_full_execute << exit;
     plc["memor"] << memory;
     plc["regs"] << reg;
     plc["rob"] << rob;
@@ -541,17 +548,22 @@ int sc_main(int argc, char *argv[])
             }
         }
     }
+
     clock_control.enabled(false);
-    botao.events().click([&]
+    btn_full_execute.enabled(false);
+
+    start.events().click([&]
     {
         if(fila)
         {
-            botao.enabled(false);
+            start.enabled(false);
             clock_control.enabled(true);
+            btn_full_execute.enabled(true);
             //Desativa os menus apos inicio da execucao
             op.enabled(0,false);
             op.enabled(1,false);
             op.enabled(3,false);
+
             for(int i = 0 ; i < 6 ; i++)
                 sub->enabled(i,false);
             for(int i = 0 ; i < 5 ; i++)
@@ -567,13 +579,17 @@ int sc_main(int argc, char *argv[])
     });
     clock_control.events().click([]
     {
-        if(sc_is_running())
-            sc_start();
+      if(sc_is_running())
+          sc_start();
     });
 
-    btn_full_execute.events().click([]
+    btn_full_execute.events().click([&]
     {
       // TODO: implement logic btn full execute here
+      if ( top1.get_rob().rob_is_empty() )
+       cout << "Is empty" << endl;
+      else
+        cout << "Is not empty" << endl;
     });
     exit.events().click([]
     {

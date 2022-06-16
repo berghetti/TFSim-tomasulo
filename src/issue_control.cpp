@@ -19,6 +19,7 @@ issue_control::issue_control(sc_module_name name): sc_module(name)
       {"LD",2},
       {"SD",2}
     };
+
     SC_THREAD(issue_select);
     sensitive << in;
     dont_initialize();

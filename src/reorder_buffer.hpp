@@ -36,6 +36,8 @@ public:
     void value_check();
     void check_conflict();
 
+    bool rob_is_empty();
+
 private:
     struct rob_slot{
         unsigned int entry;
