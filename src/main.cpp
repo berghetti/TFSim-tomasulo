@@ -571,7 +571,7 @@ int sc_main(int argc, char *argv[])
             sc_start();
     });
 
-    btn_full_execute.exents().click([]
+    btn_full_execute.events().click([]
     {
       // TODO: implement logic btn full execute here
     });
