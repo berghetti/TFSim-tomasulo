@@ -39,6 +39,7 @@ int sc_main(int argc, char *argv[])
     listbox rob(fm);
     menubar mnbar(fm);
     button botao(fm);
+    button btn_full_execute(fm);
     button clock_control(fm);
     button exit(fm);
     group clock_group(fm);
@@ -51,11 +52,12 @@ int sc_main(int argc, char *argv[])
     // Novas instrucoes devem ser inseridas manualmente aqui
     map<string,int> instruct_time{{"DADD",4},{"DADDI",4},{"DSUB",6},{"DSUBI",6},{"DMUL",10},{"DDIV",16},{"MEM",2}};
     top top1("top");
-    botao.caption("START");
-    clock_control.caption("NEXT CYCLE");
-    exit.caption("EXIT");
+    botao.caption("Start");
+    clock_control.caption("Next Cycle");
+    btn_full_execute.caption("Full Execute");
+    exit.caption("Exit");
     plc["rst"] << table;
-    plc["btns"] << botao << clock_control << exit;
+    plc["btns"] << botao << clock_control << btn_full_execute << exit;
     plc["memor"] << memory;
     plc["regs"] << reg;
     plc["rob"] << rob;
@@ -229,24 +231,24 @@ int sc_main(int argc, char *argv[])
             {
                 string str;
                 int reg_pos,i;
-                bool is_float, ok; 
+                bool is_float, ok;
                 ok = true;
                 while(inFile >> str)
                 {
                     if(str[0] == '$')
                     {
                         if(str[1] == 'f')
-                        { 
+                        {
                             i = 2;
-                            is_float = true; 
+                            is_float = true;
                         }
-                            else 
-                        { 
-                            i = 1; 
+                            else
+                        {
+                            i = 1;
                             is_float = false;
                         }
                         reg_pos = std::stoi(str.substr(i,str.size()-i));
-                        
+
                         auto reg_gui = reg.at(0);
                         string value;
                         inFile >> value;
@@ -264,10 +266,10 @@ int sc_main(int argc, char *argv[])
                             {
                                 ok = false;
                                 break;
-                            }   
+                            }
                         }
                     }
-                }   
+                }
                 inFile.close();
                 msgbox msg("Verificação de registradores");
                 if(ok)
@@ -297,7 +299,7 @@ int sc_main(int argc, char *argv[])
             else
             {
                 string value;
-                bool ok; 
+                bool ok;
                 ok = true;
                 for(int i = 0 ; i < 500 ; i++)
                 {
@@ -327,7 +329,7 @@ int sc_main(int argc, char *argv[])
     op.append("Benchmarks");
     auto bench_sub = op.create_sub_menu(3);
     bench_sub->append("Fibonacci",[&](menu::item_proxy &ip){
-        string path = "in/benchmarks/fibonacci.txt";        
+        string path = "in/benchmarks/fibonacci.txt";
         inFile.open(path);
         if(!add_instructions(inFile,instruction_queue,instruct))
             show_message("Arquivo inválido","Não foi possível abrir o arquivo!");
@@ -335,7 +337,7 @@ int sc_main(int argc, char *argv[])
             fila = true;
     });
     bench_sub->append("Busca em Vetor",[&](menu::item_proxy &ip){
-        string path = "in/benchmarks/vector_search.txt";        
+        string path = "in/benchmarks/vector_search.txt";
         inFile.open(path);
         if(!add_instructions(inFile,instruction_queue,instruct))
             show_message("Arquivo inválido","Não foi possível abrir o arquivo!");
@@ -343,7 +345,7 @@ int sc_main(int argc, char *argv[])
             fila = true;
     });
     bench_sub->append("Stall por Divisão",[&](menu::item_proxy &ip){
-        string path = "in/benchmarks/division_stall.txt";       
+        string path = "in/benchmarks/division_stall.txt";
         inFile.open(path);
         if(!add_instructions(inFile,instruction_queue,instruct))
             show_message("Arquivo inválido","Não foi possível abrir o arquivo!");
@@ -351,7 +353,7 @@ int sc_main(int argc, char *argv[])
             fila = true;
     });
     bench_sub->append("Stress de Memória (Stores)",[&](menu::item_proxy &ip){
-        string path = "in/benchmarks/store_stress.txt";     
+        string path = "in/benchmarks/store_stress.txt";
         inFile.open(path);
         if(!add_instructions(inFile,instruction_queue,instruct))
             show_message("Arquivo inválido","Não foi possível abrir o arquivo!");
@@ -359,14 +361,14 @@ int sc_main(int argc, char *argv[])
             fila = true;
     });
     bench_sub->append("Stall por hazard estrutural (Adds)",[&](menu::item_proxy &ip){
-        string path = "in/benchmarks/res_stations_stall.txt";       
+        string path = "in/benchmarks/res_stations_stall.txt";
         inFile.open(path);
         if(!add_instructions(inFile,instruction_queue,instruct))
             show_message("Arquivo inválido","Não foi possível abrir o arquivo!");
         else
             fila = true;
     });
-    vector<string> columns = {"#","Name","Busy","Op","Vj","Vk","Qj","Qk","A"}; 
+    vector<string> columns = {"#","Name","Busy","Op","Vj","Vk","Qj","Qk","A"};
     for(unsigned int i = 0 ; i < columns.size() ; i++)
     {
         table.append_header(columns[i].c_str());
@@ -513,7 +515,7 @@ int sc_main(int argc, char *argv[])
                     break;
                 case 's':
                     spec = true;
-                    set_spec(plc,spec); 
+                    set_spec(plc,spec);
                     spec_ip.checked(true);
                     k--;
                     break;
@@ -567,6 +569,11 @@ int sc_main(int argc, char *argv[])
     {
         if(sc_is_running())
             sc_start();
+    });
+
+    btn_full_execute.exents().click([]
+    {
+      // TODO: implement logic btn full execute here
     });
     exit.events().click([]
     {
