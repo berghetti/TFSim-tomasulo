@@ -577,6 +577,7 @@ int sc_main(int argc, char *argv[])
         else
             show_message("Fila de instruções vazia","A fila de instruções está vazia. Insira um conjunto de instruções para iniciar.");
     });
+
     clock_control.events().click([]
     {
       if(sc_is_running())
@@ -585,12 +586,15 @@ int sc_main(int argc, char *argv[])
 
     btn_full_execute.events().click([&]
     {
-      // TODO: implement logic btn full execute here
-      if ( top1.get_rob().rob_is_empty() )
-       cout << "Is empty" << endl;
-      else
-        cout << "Is not empty" << endl;
+      // while queue and rob is not empty, run to the end.
+      while( !( top1.get_queue().queue_is_empty() &&
+                top1.get_rob().rob_is_empty() ) )
+        {
+          if(sc_is_running())
+              sc_start();
+        }
     });
+
     exit.events().click([]
     {
         sc_stop();
