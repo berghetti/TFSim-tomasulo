@@ -54,12 +54,13 @@ void reorder_buffer::leitura_issue()
     auto cat = gui_table.at(0);
     while(true)
     {
-        pos = busy_check();
+        pos = busy_check(); // get current last position rob and increment position
         if(ptrs[pos]->busy)
         {
             cout << "ROB esta totalmente ocupado" << endl << flush;
             wait(free_rob_event);
         }
+
         in_issue->read(p);
         out_issue->write(std::to_string(pos+1));
         ord = instruction_split(p);
@@ -150,8 +151,10 @@ void reorder_buffer::leitura_issue()
                 cat.at(pos).text(DESTINATION,ord[2]);
                 ptrs[pos]->destination = ord[2];
             }
+
             ptrs[pos]->prediction = preditor.predict();
-            if(preditor.predict())
+
+            if(ptrs[pos]->prediction)
                 out_iq->write("S " + std::to_string(ptrs[pos]->entry) +  ' ' + ptrs[pos]->destination);
             else
                 out_iq->write("S " + std::to_string(ptrs[pos]->entry));
