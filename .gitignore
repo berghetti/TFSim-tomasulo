@@ -1,3 +1,6 @@
 nana/
 systemc*/
 tfsim
+
+!out/.gitkeep
+out/*
