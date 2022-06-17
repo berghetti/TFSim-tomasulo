@@ -154,7 +154,7 @@ void reorder_buffer::leitura_issue()
 
             ptrs[pos]->prediction = preditor.predict();
 
-            if(ptrs[pos]->prediction)
+            if( ptrs[pos]->prediction )
                 out_iq->write("S " + std::to_string(ptrs[pos]->entry) +  ' ' + ptrs[pos]->destination);
             else
                 out_iq->write("S " + std::to_string(ptrs[pos]->entry));
@@ -493,10 +493,9 @@ int reorder_buffer::instruction_pos_finder(string p)
 bool reorder_buffer::rob_is_empty( void )
 {
   unsigned int i = tam;
-  rob_slot **p = ptrs;
 
   while(i--)
-    if ( p[i]->busy )
+    if ( ptrs[i]->busy )
       return false;
 
   return true;
