@@ -22,6 +22,7 @@ using std::fstream;
 #define N_RS_MUL 2
 #define N_RS_LS 2
 
+void dumpRegs(nana::listbox::cat_proxy reg_gui, nana::grid &memory);
 
 int sc_main(int argc, char *argv[])
 {
@@ -593,6 +594,8 @@ int sc_main(int argc, char *argv[])
           if(sc_is_running())
               sc_start();
         }
+        
+        dumpRegs(reg_gui, memory);
     });
 
     exit.events().click([]
@@ -603,4 +606,37 @@ int sc_main(int argc, char *argv[])
     fm.show();
     exec();
     return 0;
+}
+
+
+void dumpRegs(nana::listbox::cat_proxy reg_gui, nana::grid &memory){
+    int i;
+    ofstream outfile;
+    outfile.open("out/reg_status.txt");
+    
+    for(i=0; i< 31; i++){
+        //cout << std::stof(reg_gui.at(i).text(4)) << endl;
+        outfile << reg_gui.at(i).text(1) << " ";
+    }
+    outfile << reg_gui.at(31).text(1);
+    outfile.close();
+
+
+    outfile.open("out/reg_status_fp.txt");
+    for(i=0; i< 31; i++){
+        outfile << std::stof(reg_gui.at(i).text(4)) << " ";
+    }
+    outfile << reg_gui.at(31).text(4);
+    outfile.close();
+
+
+    outfile.open("out/mem_status.txt");
+    for(i=0; i< 499; i++){
+        outfile << memory.Get(i) << " ";
+    }
+    outfile << memory.Get(i);
+    outfile.close();
+
+    
+
 }
