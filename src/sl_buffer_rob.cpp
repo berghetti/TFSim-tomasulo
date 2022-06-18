@@ -71,10 +71,10 @@ void sl_buffer_rob::leitura_issue()
         rob_pos = std::stoi(ord[5]); // TODO: check
         ptrs[pos]->op = ord[0];
         ptrs[pos]->instr_pos = std::stoi(ord[3]);
-        // cat.at(pos+tam_outros).text(OP,ord[0]);
+        cat.at(pos+tam_outros).text(OP,ord[0]);
         ptrs[pos]->dest = rob_pos;
         ptrs[pos]->Busy = true;
-        // cat.at(pos+tam_outros).text(BUSY,"True");
+        cat.at(pos+tam_outros).text(BUSY,"True");
         cout << "Instrucao " << ord[0] << " aguardando o calculo de endereço" << endl << flush;
         wait();
     }
