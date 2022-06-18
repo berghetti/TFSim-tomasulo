@@ -606,12 +606,12 @@ int sc_main(int argc, char *argv[])
 
     clock_control.events().click([&]
     {
-      if ( !top1.get_queue().queue_is_empty() &&
-           !top1.get_rob().rob_is_empty() )
-        {
-          if(sc_is_running())
-              sc_start();
-        }
+      if ( top1.get_queue().queue_is_empty() &&
+           top1.get_rob().rob_is_empty() )
+        return;
+
+      if(sc_is_running())
+          sc_start();
     });
 
     btn_full_execute.events().click([&]

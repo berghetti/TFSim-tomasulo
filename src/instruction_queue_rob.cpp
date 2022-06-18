@@ -45,7 +45,7 @@ void instruction_queue_rob::main()
             // Instructions + current_pc + pc_original_instruction
             out->write( instruct_queue[pc].instruction + " " +
                         std::to_string(pc) + " " +
-                        std::to_string( instruct_queue[pc].pc ) );
+                      /* std::to_string( instruct_queue[pc].pc ) */ "100");
 
             pc++;
             wait(SC_ZERO_TIME);
