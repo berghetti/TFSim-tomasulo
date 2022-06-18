@@ -31,6 +31,10 @@ int sc_main(int argc, char *argv[])
     using namespace nana;
     vector<string> instruction_queue;
 
+#ifdef USE_BPB
+    unsigned int len_bpb = 0; // 0 equal usage default lenght bpb
+#endif
+
     int nadd = N_RS_ADD;
     int nmul = N_RS_MUL;
     int nls = N_RS_LS;
@@ -437,7 +441,7 @@ int sc_main(int argc, char *argv[])
     for(int k = 1; k < argc; k+=2)
     {
         int i;
-        if (strlen(argv[k]) > 2)
+        if ( argv[k][0] != '-' )
             show_message("Opção inválida",string("Opção \"") + string(argv[k]) + string("\" inválida"));
         else
         {
@@ -545,6 +549,13 @@ int sc_main(int argc, char *argv[])
                     }
                     inFile.close();
                     break;
+#ifdef USE_BPB
+                case 'b':
+                    if ( !strcmp ( argv[k], "-bpb" ) )
+                      len_bpb = std::stoi( argv[ k + 1 ] );
+
+                  break;
+#endif
                 default:
                     show_message("Opção inválida",string("Opção \"") + string(argv[k]) + string("\" inválida"));
                     break;
@@ -557,12 +568,14 @@ int sc_main(int argc, char *argv[])
 
 
 #ifdef USE_BPB
-    if ( !bpb_init( 0 ) )
+    if ( !bpb_init( len_bpb ) )
       {
-        cout << "Error init BPB" << endl;
+        cerr << "Error init BPB" << endl;
         sc_stop();
         API::exit();
       }
+
+    cout << "Uisng BPB with lenght " << ( len_bpb ? std::to_string(len_bpb) : "default." ) << endl;
 #endif
 
     start.events().click([&]
@@ -591,10 +604,14 @@ int sc_main(int argc, char *argv[])
             show_message("Fila de instruções vazia","A fila de instruções está vazia. Insira um conjunto de instruções para iniciar.");
     });
 
-    clock_control.events().click([]
+    clock_control.events().click([&]
     {
-      if(sc_is_running())
-          sc_start();
+      if ( !top1.get_queue().queue_is_empty() &&
+           !top1.get_rob().rob_is_empty() )
+        {
+          if(sc_is_running())
+              sc_start();
+        }
     });
 
     btn_full_execute.events().click([&]
