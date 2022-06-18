@@ -61,7 +61,7 @@ void reorder_buffer::leitura_issue()
             wait(free_rob_event);
         }
 
-        in_issue->read(p);
+        in_issue->read(p); // example,"DADDI R1,R1,1 0 1", instruction + general_pc + original_pc
         out_issue->write(std::to_string(pos+1));
         ord = instruction_split(p);
         inst = p.substr(0,instruction_pos_finder(p));
@@ -75,7 +75,10 @@ void reorder_buffer::leitura_issue()
         cat.at(pos).text(INSTRUCTION,inst);
         ptrs[pos]->state = ISSUE;
         cat.at(pos).text(STATE,"Issue");
-        ptrs[pos]->instr_pos = std::stoi(ord[ord.size()-1]);
+
+        ptrs[pos]->instr_pos = std::stoi( ord[ord.size() - 2] );
+        ptrs[pos]->pc = std::stoi( ord[ord.size() - 1] );
+
         if(ord[0].at(0) == 'S')
         {
             check_value = false;
@@ -123,6 +126,7 @@ void reorder_buffer::leitura_issue()
             }
             else
                 ptrs[pos]->qj = regst;
+
             if(branch_instr[ord[0]] < 2) //instrucao com 2 operandos (BEQ,BNE)
             {
                 regst = ask_status(true,ord[2]);
@@ -154,8 +158,11 @@ void reorder_buffer::leitura_issue()
 
             ptrs[pos]->prediction = preditor.predict();
 
+
+            // if prediction is taken (true).
+            // this go to 'instructions_queue_rob::leitura_rob'
             if( ptrs[pos]->prediction )
-                out_iq->write("S " + std::to_string(ptrs[pos]->entry) +  ' ' + ptrs[pos]->destination);
+              out_iq->write("S " + std::to_string(ptrs[pos]->entry) +  ' ' + ptrs[pos]->destination);
             else
                 out_iq->write("S " + std::to_string(ptrs[pos]->entry));
             if(ptrs[pos]->qj == 0 && ptrs[pos]->qk == 0)
@@ -187,44 +194,60 @@ void reorder_buffer::new_rob_head()
             wait(new_rob_head_event);
         if(!rob_buff[0]->ready)
             wait(rob_head_value_event);
+
         rob_buff[0]->state = COMMIT;
         wait(SC_ZERO_TIME);
+
         cat.at(rob_buff[0]->entry-1).text(STATE,"Commit");
-        if(rob_buff[0]->instruction.at(0) == 'S')
-            mem_write(std::stoi(rob_buff[0]->destination),rob_buff[0]->value,rob_buff[0]->entry);
-        else if(rob_buff[0]->instruction.at(0) == 'B')
-        {
-            instr_queue_gui.at(rob_buff[0]->instr_pos).text(EXEC,"X");
-            instr_queue_gui.at(rob_buff[0]->instr_pos).text(WRITE,"X");
-            instr_type = branch_instr[rob_buff[0]->instruction];
-            if(instr_type < 2)
-                pred = branch(instr_type,rob_buff[0]->vj,rob_buff[0]->vk);
-            else
-                pred = branch(instr_type,(float)rob_buff[0]->vj);
-            if(pred != rob_buff[0]->prediction)
-            {
-                if(pred)
-                    out_iq->write(rob_buff[0]->destination + ' ' + std::to_string(rob_buff[0]->entry));
-                else
-                    out_iq->write("R " + std::to_string(rob_buff[0]->entry));
-                cout << "-----------------LIMPANDO ROB no ciclo " << sc_time_stamp() << " -----------------" << endl << flush;
-                _flush(); //Esvazia o ROB
-                out_resv_adu->write("F");
-                out_slb->write("F");
-                out_rb->write("F");
-                out_adu->write("F");
-            }
-            preditor.update_state(pred);
-        }
-        else
-        {
-            wait(SC_ZERO_TIME);
-            unsigned int regst = ask_status(true,rob_buff[0]->destination);
-            ask_value(false,rob_buff[0]->destination,rob_buff[0]->value);
-            if(regst == rob_buff[0]->entry)
-                ask_status(false,rob_buff[0]->destination,0);
-        }
-        if(!rob_buff.empty())
+
+        switch( rob_buff[0]->instruction.at(0) )
+          {
+            case 'S': // STORE
+              mem_write( std::stoi( rob_buff[0]->destination ),
+                         rob_buff[0]->value,
+                         rob_buff[0]->entry );
+              break;
+
+            case 'B': // ANY BRANCH
+              instr_queue_gui.at(rob_buff[0]->instr_pos).text(EXEC,"X");
+              instr_queue_gui.at(rob_buff[0]->instr_pos).text(WRITE,"X");
+
+              cout << "Here" << endl;
+
+              instr_type = branch_instr[ rob_buff[0]->instruction ];
+
+              if( instr_type < 2 ) // BEQ or BNE
+                  pred = branch( instr_type, rob_buff[0]->vj, rob_buff[0]->vk );
+              else
+                  pred = branch( instr_type, (float)rob_buff[0]->vj );
+
+              if( pred != rob_buff[0]->prediction )
+              {
+                  if(pred)
+                      out_iq->write(rob_buff[0]->destination + ' ' + std::to_string(rob_buff[0]->entry));
+                  else
+                      out_iq->write("R " + std::to_string(rob_buff[0]->entry));
+
+                  cout << "-----------------LIMPANDO ROB no ciclo " << sc_time_stamp() << " -----------------" << endl << flush;
+                  _flush(); //Esvazia o ROB
+                  out_resv_adu->write("F");
+                  out_slb->write("F");
+                  out_rb->write("F");
+                  out_adu->write("F");
+              }
+              preditor.update_state(pred);
+              break;
+
+            default: // Write destination register
+              wait(SC_ZERO_TIME);
+              unsigned int regst = ask_status(true,rob_buff[0]->destination);
+              ask_value(false,rob_buff[0]->destination,rob_buff[0]->value);
+              if(regst == rob_buff[0]->entry)
+                  ask_status(false,rob_buff[0]->destination,0);
+          }
+
+        // remove head instruction from buffer
+        if( !rob_buff.empty() )
         {
             rob_buff[0]->busy = false;
             cat.at(rob_buff[0]->entry-1).text(R_BUSY,"False");
@@ -235,6 +258,7 @@ void reorder_buffer::new_rob_head()
             free_rob_event.notify(1,SC_NS);
             rob_buff.pop_front();
         }
+
         wait(1,SC_NS);
     }
 }
@@ -493,6 +517,8 @@ int reorder_buffer::instruction_pos_finder(string p)
 bool reorder_buffer::rob_is_empty( void )
 {
   unsigned int i = tam;
+
+  // TODO: test is rob_buff.empty()
 
   while(i--)
     if ( ptrs[i]->busy )
