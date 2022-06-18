@@ -12,6 +12,8 @@
 #include "top.hpp"
 #include "gui.hpp"
 
+#include "bpb.h"
+
 using std::string;
 using std::vector;
 using std::map;
@@ -553,6 +555,16 @@ int sc_main(int argc, char *argv[])
     clock_control.enabled(false);
     btn_full_execute.enabled(false);
 
+
+#ifdef USE_BPB
+    if ( !bpb_init( 0 ) )
+      {
+        cout << "Error init BPB" << endl;
+        sc_stop();
+        API::exit();
+      }
+#endif
+
     start.events().click([&]
     {
         if(fila)
@@ -594,7 +606,7 @@ int sc_main(int argc, char *argv[])
           if(sc_is_running())
               sc_start();
         }
-        
+
         dumpRegs(reg_gui, memory);
     });
 
@@ -605,6 +617,11 @@ int sc_main(int argc, char *argv[])
     });
     fm.show();
     exec();
+
+#ifdef USE_BPB
+    bpb_free();
+#endif
+
     return 0;
 }
 
@@ -613,7 +630,7 @@ void dumpRegs(nana::listbox::cat_proxy reg_gui, nana::grid &memory){
     int i;
     ofstream outfile;
     outfile.open("out/reg_status.txt");
-    
+
     for(i=0; i< 31; i++){
         //cout << std::stof(reg_gui.at(i).text(4)) << endl;
         outfile << reg_gui.at(i).text(1) << " ";
@@ -636,7 +653,4 @@ void dumpRegs(nana::listbox::cat_proxy reg_gui, nana::grid &memory){
     }
     outfile << memory.Get(i);
     outfile.close();
-
-    
-
 }

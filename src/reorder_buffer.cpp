@@ -1,6 +1,8 @@
 #include <nana/gui.hpp>
 #include "reorder_buffer.hpp"
 
+#include "bpb.h"
+
 reorder_buffer::reorder_buffer(sc_module_name name,unsigned int sz,unsigned int pred_size, nana::listbox &gui, nana::listbox::cat_proxy instr_gui):
 sc_module(name),
 tam(sz),
@@ -156,15 +158,25 @@ void reorder_buffer::leitura_issue()
                 ptrs[pos]->destination = ord[2];
             }
 
+#ifndef USE_BPB
+            // original predictor
             ptrs[pos]->prediction = preditor.predict();
+#else
+            ptrs[pos]->prediction = bpb_get_prediction( ptrs[pos]->pc );
+#endif
 
-
-            // if prediction is taken (true).
             // this go to 'instructions_queue_rob::leitura_rob'
             if( ptrs[pos]->prediction )
-              out_iq->write("S " + std::to_string(ptrs[pos]->entry) +  ' ' + ptrs[pos]->destination);
+              {
+                cout << "Prediction taken to instruction " << ptrs[pos]->instruction << endl;
+                out_iq->write("S " + std::to_string(ptrs[pos]->entry) +  ' ' + ptrs[pos]->destination);
+              }
             else
-                out_iq->write("S " + std::to_string(ptrs[pos]->entry));
+              {
+                cout << "Prediction not taken to instruction " << ptrs[pos]->instruction << endl;
+                out_iq->write("S " + std::to_string(ptrs[pos]->entry) );
+              }
+
             if(ptrs[pos]->qj == 0 && ptrs[pos]->qk == 0)
                 ptrs[pos]->ready = true;
         }
@@ -221,6 +233,7 @@ void reorder_buffer::new_rob_head()
               else
                   pred = branch( instr_type, (float)rob_buff[0]->vj );
 
+              // if branch diferent of speculation, flush rob
               if( pred != rob_buff[0]->prediction )
               {
                   if(pred)
@@ -235,7 +248,12 @@ void reorder_buffer::new_rob_head()
                   out_rb->write("F");
                   out_adu->write("F");
               }
+#ifndef USE_BPB
+              // original predictor
               preditor.update_state(pred);
+#else
+              bpb_update_prediction( rob_buff[0]->pc, pred );
+#endif
               break;
 
             default: // Write destination register

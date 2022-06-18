@@ -50,9 +50,9 @@ private:
         bool prediction;
         int vj,vk;
         unsigned int qj,qk;
-        unsigned int instr_pos; // this is general pc
-        
-        unsigned int pc; // this is original pc of instruction
+        unsigned int instr_pos; // general pc ( instruction position gui )
+
+        unsigned int pc; // original pc of instruction
         rob_slot(unsigned int id)
         {
             busy = ready = false;
