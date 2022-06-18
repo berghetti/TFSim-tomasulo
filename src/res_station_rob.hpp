@@ -11,7 +11,7 @@ class res_station_rob: public sc_module
 {
 public:
     int id;
-    unsigned int dest;
+    unsigned int dest; // rob position
     string type_name;
     bool Busy;
     bool isFlushed;
