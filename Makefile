@@ -15,12 +15,15 @@ SRC_DIR = src
 OBJ_DIR = obj
 
 SRC = $(wildcard $(SRC_DIR)/*.cpp)
-OBJ = $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o) $(OBJ_DIR)/bpb.o
+
+OBJ = $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o) \
+       $(OBJ_DIR)/bpb.o
 
 CPPFLAGS += -I $(SYSTEMC_INCLUDE) -I $(NANA_INCLUDE)
 LDLFLAGS += -L $(NANA_LIB) -L $(SYSTEMC_LIB) -Wl,-rpath=$(SYSTEMC_LIB)
 
-CFLAGS += -std=c++17 -Wall -ggdb -O0
+CFLAGS += -Wall -ggdb -O0
+CXXFLAGS += -std=c++17
 LIBS += -lnana -lX11 -lpthread -lrt -lXft -lpng -lasound -lfontconfig -lm -lsystemc
 
 .PHONY: all nofs clean
@@ -29,17 +32,17 @@ all: EXE
 nofs: EXE_NOFS
 
 EXE: $(OBJ)
-	$(CXX) $(LDLFLAGS) $^ $(LIBS) -lstdc++fs -o $(EXEC_NAME)
+	$(CXX) $(CXXFLAGS) $(LDLFLAGS) $^ $(LIBS) -lstdc++fs -o $(EXEC_NAME)
 
 EXE_NOFS: $(OBJ)
 	$(CXX) $(LDLFLAGS) $^ $(LIBS) -o $(EXEC_NAME)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	$(CXX) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 # compile C files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CXX) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm $(OBJ)
