@@ -25,7 +25,7 @@ private:
     struct instr_q
     {
         string instruction;
-        unsigned int pc;
+        unsigned int pc; // original pc of instruction
     };
 
     vector<instr_q> instruct_queue;
