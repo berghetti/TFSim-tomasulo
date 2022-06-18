@@ -46,3 +46,18 @@ DMUL | BGEZ |
 DDIV| BLEZ |
 LD|
 SD|
+
+### Branch prediction Buffer (BPB)
+ Para utilizar o BPB, compile com
+ ```console
+ $ CFLAGS=-DUSE_BPB make
+ ```    
+ ao compilar com essa flag uma nova opção de linha de comando `-bpb`   pode ser utilizada  
+ para especificar a quantidade de posições do buffer.  
+
+ Ex.
+ ```console
+ $ ./tfsim -bpb 8
+ ```  
+ tera um buffer de 8 posições.  
+ Caso a opção não seja utilizada o BPB tera um tamanho padrão de `10` posições.
