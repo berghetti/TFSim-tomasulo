@@ -24,6 +24,15 @@ rst_tam(rst_tm)
 
 void address_unit::leitura_issue()
 {
+  /* Example input
+     LD R6,0(R3) 3 2 4 0
+     instruction - LD R6,0(R3)
+     general_pc - 3
+     original_pc - 2
+     rob position - 4
+     rst_pos - 0
+     {"LD", "R6", "0(R3)", "3", "211", "4", "0"}
+     */
     bool store;
     bool check_value;
     int value;
@@ -35,7 +44,7 @@ void address_unit::leitura_issue()
         mem_ord = offset_split(ord[2]);
         a = std::stoi(mem_ord[0]);
         instr_pos = std::stoi(ord[3]);
-        rob_pos = std::stoi(ord[4]);
+        rob_pos = std::stoi(ord[5]);
         regst = ask_status(true,mem_ord[1]);
         check_value = false;
         if(regst != 0)
@@ -45,7 +54,7 @@ void address_unit::leitura_issue()
             {
                 value = std::stof(check);
                 check_value = true;
-            }   
+            }
         }
         if(ord[0].at(0) == 'S')
             store = true;
@@ -53,7 +62,7 @@ void address_unit::leitura_issue()
             store = false;
         if(!store)
         {
-            rst_pos = std::stoi(ord[5]);
+            rst_pos = std::stoi(ord[6]);
             res_station_table.at(rst_pos+rst_tam).text(A,mem_ord[0]);
         }
         else
