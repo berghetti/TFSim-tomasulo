@@ -9,12 +9,13 @@ NANA_INCLUDE=$(ROOT)/nana/include
 NANA_LIB=$(ROOT)/nana/built
 
 CXX = g++
+CC ?= gcc
 INCLUDEDIR = include/
 SRC_DIR = src
 OBJ_DIR = obj
 
 SRC = $(wildcard $(SRC_DIR)/*.cpp)
-OBJ = $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+OBJ = $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o) $(OBJ_DIR)/bpb.o
 
 CPPFLAGS += -I $(SYSTEMC_INCLUDE) -I $(NANA_INCLUDE)
 LDLFLAGS += -L $(NANA_LIB) -L $(SYSTEMC_LIB) -Wl,-rpath=$(SYSTEMC_LIB)
@@ -34,6 +35,10 @@ EXE_NOFS: $(OBJ)
 	$(CXX) $(LDLFLAGS) $^ $(LIBS) -o $(EXEC_NAME)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	$(CXX) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+
+# compile C files
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CXX) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 clean:
