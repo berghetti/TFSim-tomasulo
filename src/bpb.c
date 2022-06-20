@@ -1,21 +1,46 @@
-/* Branch Prediction Buffer */
+/*
+Branch Prediction Buffer (BPB)
+
+Considerations:
+  BPB can be configured to usage desired amount bits to change prediction,
+  changing N_BITS define and recompiling simulator.
+
+  BPB start with state 0 ( not taken ), to change this initialize memory of bpb
+  on function bpb_init to value desired.
+
+How this work:
+  on first bpb_get_prediction of branch 'x' is return false ( not taken ),
+  after processing of branch 'x' bpb_update_prediction must be call
+  passing if the branch was or not taken,
+
+  case yes, state of branch is incremented by 1 if current state is less than 'max',
+  case no, state of branch is decremented by 1 if current state is greater than 0
+
+  return is, state & MSB (max),
+  then if prediction was 2 bits (default) return ( state & 1 << ( 2 - 1 ) ),
+  examples:
+    state == 0 - return Not Taken
+    state == 1 - return Not Taken
+    state == 2 - return Taken
+    state == 3 - return Taken
+*/
 
 #include <stdbool.h>
 #include <stdlib.h>
 
-#define DEFAULT_LEN_BPB 10
-#define DEFAULT_NBITS 2
+#define DEFAULT_SIZE_BPB 10
+#define N_BITS 2
 
-// initial predictions is not taken ( false )
+#define MAX ( ( 1 << N_BITS ) -1 )
+#define MSB ( 1 << ( N_BITS - 1 ) ) /* most significant bit */
+
 static int *bpb;
 static unsigned int size_bpb;
-static unsigned int qtd_bits = DEFAULT_NBITS;
-static unsigned int max = ( 1 << DEFAULT_NBITS ) -1;
 
 bool
 bpb_init( unsigned int size )
 {
-  size_bpb = size ? size : DEFAULT_LEN_BPB;
+  size_bpb = size ? size : DEFAULT_SIZE_BPB;
 
   bpb = calloc( size, sizeof *bpb );
 
@@ -25,19 +50,19 @@ bpb_init( unsigned int size )
 bool
 bpb_get_prediction( unsigned int pc )
 {
-  return bpb[ pc % size_bpb ] & ( 1 << ( qtd_bits - 1 ) );
+  return ( bpb[ pc % size_bpb ] & MSB );
 }
 
 void
 bpb_update_prediction( unsigned int pc, bool pred )
 {
-  int i = pc % size_bpb;
+  unsigned int i = pc % size_bpb;
   int state = bpb[i];
 
   if ( pred )
-    state = ( (unsigned) ++state ) > max ? max : state;
+    state += ( state < MAX );
   else
-    state = --state < 0 ? 0 : state;
+    state -=  ( state > 0 );
 
   bpb[i] = state;
 }
