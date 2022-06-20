@@ -2,7 +2,7 @@ nana/
 systemc*/
 tfsim
 
-result/*
+result/
 !result/.gitkeep
 
 out/*
