@@ -631,7 +631,13 @@ int sc_main(int argc, char *argv[])
         }
 
         dump_regs(reg_gui, memory);
-        // diff(reg_gui, memory, "out/"+get_file_name(regi_file_name), "out/"+get_file_name(regfp_file_name), "out/"+get_file_name(memory_file_name));
+
+        try{
+            diff(reg_gui, memory, "out/"+get_file_name(regi_file_name), "out/"+get_file_name(regfp_file_name), "out/"+get_file_name(memory_file_name));
+        }
+        catch(int ex){
+            show_message("Erro!", "Impossível executar comparação de corretude de saída. Arquivos de comparação inexistentes. Por favor corrija o problema e execute novamente.");
+        }
 
         show_metrics( top1 );
 
@@ -726,7 +732,7 @@ bool diff(nana::listbox::cat_proxy reg_gui, nana::grid &memory, string regi_path
     if(! ( (std::filesystem::exists(regi_path)  || get_file_name(regi_path) ==  "NA") &&
            (std::filesystem::exists(regfp_path) || get_file_name(regfp_path) == "NA") &&
            (std::filesystem::exists(mem_path)   || get_file_name(mem_path) == "NA") )){
-        throw "Arquivos de comparação inexistentes. Por favor corrija o problema e execute novamente.";
+        throw 1;
     }
 
     in_file.open(regi_path);
