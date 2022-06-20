@@ -37,6 +37,9 @@ How this work:
 static int *bpb;
 static unsigned int size_bpb;
 
+static unsigned int tot_predictions;
+static unsigned int tot_hit;
+
 bool
 bpb_init( unsigned int size )
 {
@@ -50,21 +53,30 @@ bpb_init( unsigned int size )
 bool
 bpb_get_prediction( unsigned int pc )
 {
+  tot_predictions++;
   return ( bpb[ pc % size_bpb ] & MSB );
 }
 
 void
-bpb_update_prediction( unsigned int pc, bool pred )
+bpb_update_prediction( unsigned int pc, bool taken )
 {
   unsigned int i = pc % size_bpb;
   int state = bpb[i];
 
-  if ( pred )
+  tot_hit += ( ( bpb[i] & MSB ) == taken );
+
+  if ( taken )
     state += ( state < MAX );
   else
     state -=  ( state > 0 );
 
   bpb[i] = state;
+}
+
+float
+bpb_get_hit_rate( void )
+{
+  return ( float ) tot_hit / ( float ) tot_predictions * 100.0;
 }
 
 void
