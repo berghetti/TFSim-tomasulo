@@ -18,6 +18,7 @@ public:
     void leitura_rob();
 
     bool queue_is_empty( void );
+    unsigned int get_instruction_counter( void );
 
 private:
     unsigned int pc;

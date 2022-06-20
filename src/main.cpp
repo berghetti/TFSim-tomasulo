@@ -12,6 +12,10 @@
 #include "top.hpp"
 #include "gui.hpp"
 
+#include <bits/stdc++.h>
+#include <string>
+#include <stdexcept>
+
 #include "bpb.h"
 
 using std::string;
@@ -24,7 +28,13 @@ using std::fstream;
 #define N_RS_MUL 2
 #define N_RS_LS 2
 
-void dumpRegs(nana::listbox::cat_proxy reg_gui, nana::grid &memory);
+void dump_regs(nana::listbox::cat_proxy reg_gui, nana::grid &memory);
+string get_file_name(string path);
+bool diff(nana::listbox::cat_proxy reg_gui, nana::grid &memory, string regi_path, string regpf_path, string mem_path);
+
+void show_metrics( top & );
+
+static unsigned int cpu_freq = 1000; // default 1Ghz used to compute metrics
 
 int sc_main(int argc, char *argv[])
 {
@@ -38,6 +48,10 @@ int sc_main(int argc, char *argv[])
     int nadd = N_RS_ADD;
     int nmul = N_RS_MUL;
     int nls = N_RS_LS;
+
+    string regi_file_name   = "NA";
+    string regfp_file_name  = "NA";
+    string memory_file_name = "NA";
 
     std::vector<int> sizes;
     bool spec = false;
@@ -441,13 +455,20 @@ int sc_main(int argc, char *argv[])
     for(int k = 1; k < argc; k+=2)
     {
         int i;
-        if ( argv[k][0] != '-' )
+        if ( '-' != argv[k][0] )
             show_message("Opção inválida",string("Opção \"") + string(argv[k]) + string("\" inválida"));
         else
         {
             char c = argv[k][1];
+
             switch(c)
             {
+                case 'c':
+                  if ( !strcmp( argv[k], "-cpu") )
+                    {
+                      cpu_freq = std::stoi(argv[k+1]);
+                    }
+                  break;
                 case 'q':
                     inFile.open(argv[k+1]);
                     if(!add_instructions(inFile,instruction_queue,instruct))
@@ -456,7 +477,12 @@ int sc_main(int argc, char *argv[])
                         fila = true;
                     break;
                 case 'i':
+
                     inFile.open(argv[k+1]);
+
+                    regi_file_name = argv[k+1];
+                    //cout << "valor: " << get_file_name(regi_file_name) <<endl;
+
                     int value;
                     i = 0;
                     if(!inFile.is_open())
@@ -477,6 +503,9 @@ int sc_main(int argc, char *argv[])
                     float value_fp;
                     i = 0;
                     inFile.open(argv[k+1]);
+
+                    regfp_file_name = argv[k+1];
+
                     if(!inFile.is_open())
                         show_message("Arquivo inválido","Não foi possível abrir o arquivo!");
                     else
@@ -493,6 +522,8 @@ int sc_main(int argc, char *argv[])
                     break;
                 case 'm':
                     inFile.open(argv[k+1]);
+                    memory_file_name = argv[k+1];
+
                     if(!inFile.is_open())
                         show_message("Arquivo inválido","Não foi possível abrir o arquivo!");
                     else
@@ -624,7 +655,17 @@ int sc_main(int argc, char *argv[])
               sc_start();
         }
 
-        dumpRegs(reg_gui, memory);
+        dump_regs(reg_gui, memory);
+
+        try{
+            diff(reg_gui, memory, "out/"+get_file_name(regi_file_name), "out/"+get_file_name(regfp_file_name), "out/"+get_file_name(memory_file_name));
+        }
+        catch(int ex){
+            show_message("Erro!", "Impossível executar comparação de corretude de saída. Arquivos de comparação inexistentes. Por favor corrija o problema e execute novamente.");
+        }
+
+        show_metrics( top1 );
+
     });
 
     exit.events().click([]
@@ -642,32 +683,175 @@ int sc_main(int argc, char *argv[])
     return 0;
 }
 
-
-void dumpRegs(nana::listbox::cat_proxy reg_gui, nana::grid &memory){
+/**
+ * @brief Writes integer and floating point precision registers and memory status into its proper files. Uses folder results as storage.
+ *
+ * @param reg_gui nana listbox handler
+ * @param memory nana grid
+ */
+void dump_regs(nana::listbox::cat_proxy reg_gui, nana::grid &memory){
     int i;
-    ofstream outfile;
-    outfile.open("out/reg_status.txt");
+    ofstream out_file;
+
+    if(! std::filesystem::exists("result/")){
+        cout << "criando diretório result" <<endl;
+        std::filesystem::create_directory("result/");
+    }
+
+    out_file.open("result/reg_status.txt");
+
+    cout << "Salvando os registradores e estado da memória" << endl;
 
     for(i=0; i< 31; i++){
-        //cout << std::stof(reg_gui.at(i).text(4)) << endl;
-        outfile << reg_gui.at(i).text(1) << " ";
+        out_file << reg_gui.at(i).text(1) << " ";
     }
-    outfile << reg_gui.at(31).text(1);
-    outfile.close();
+    out_file << reg_gui.at(31).text(1);
+    out_file.close();
 
 
-    outfile.open("out/reg_status_fp.txt");
+    out_file.open("result/reg_status_fp.txt");
     for(i=0; i< 31; i++){
-        outfile << std::stof(reg_gui.at(i).text(4)) << " ";
+        out_file << std::stof(reg_gui.at(i).text(4)) << " ";
     }
-    outfile << reg_gui.at(31).text(4);
-    outfile.close();
+    out_file << reg_gui.at(31).text(4);
+    out_file.close();
 
 
-    outfile.open("out/mem_status.txt");
+    out_file.open("result/mem_status.txt");
     for(i=0; i< 499; i++){
-        outfile << memory.Get(i) << " ";
+        out_file << memory.Get(i) << " ";
     }
-    outfile << memory.Get(i);
-    outfile.close();
+    out_file << memory.Get(i);
+    out_file.close();
+
+
+
+}
+
+/**
+ * @brief Get the file name object removing its path.
+ *
+ * @param path relative path from where a reg/mem file is stored
+ * @return string
+ */
+string get_file_name(string path){
+    std::stringstream orig(path);
+    string substr;
+    std::vector<string> vec;
+    while(orig.good()){
+        getline(orig, substr, '/');
+        vec.push_back(substr);
+    }
+
+    return vec.at(vec.size()-1);
+}
+
+
+bool diff(nana::listbox::cat_proxy reg_gui, nana::grid &memory, string regi_path, string regfp_path, string mem_path){
+    ifstream in_file;
+    int value, i=0;
+    std::map<string, std::vector<int>> wrong_values;
+
+    cout << "Iniciando comparação com os arquivos de saída:"<< endl;
+    cout << regi_path<<endl;
+    cout << regfp_path<< endl;
+    cout << mem_path<<endl;
+
+    //só deve lançar erro caso o arquivo fonte tenha sido informado, mas seu equivalente de caso de teste não tenha sido encontrado.
+    if(! ( (std::filesystem::exists(regi_path)  || get_file_name(regi_path) ==  "NA") &&
+           (std::filesystem::exists(regfp_path) || get_file_name(regfp_path) == "NA") &&
+           (std::filesystem::exists(mem_path)   || get_file_name(mem_path) == "NA") )){
+        throw 1;
+    }
+
+    in_file.open(regi_path);
+
+    wrong_values.insert( std::pair<string, std::vector<int>>("regi", std::vector<int>()) );
+    wrong_values.insert( std::pair<string, std::vector<int>>("regpf", std::vector<int>()) );
+    wrong_values.insert( std::pair<string, std::vector<int>>("mem", std::vector<int>()) );
+
+    if( get_file_name(regi_path) != "NA" ){
+        for(i=0; in_file >> value  && i < 32;i++){
+            if(value != stoi(reg_gui.at(i).text(1)) ){
+                wrong_values.at("regi").push_back(i);
+            }
+        }
+    }
+    in_file.close();
+
+    if(get_file_name(regfp_path) != "NA"){
+        in_file.open(regfp_path);
+        for(i=0; in_file >> value  && i < 32;i++){
+            if(value != stof(reg_gui.at(i).text(4)) ){
+                wrong_values.at("regpf").push_back(i);
+            }
+        }
+    }
+    in_file.close();
+
+    if(get_file_name(mem_path) != "NA"){
+        in_file.open(mem_path);//possível problema com valores em pf na memória
+        for(i=0; in_file >> value  && i < 500;i++){
+            if(value != stoi(memory.Get(i)) ){
+                wrong_values.at("mem").push_back(i);
+            }
+        }
+    }
+    in_file.close();
+
+    if(wrong_values.at("regi").empty() && wrong_values.at("regpf").empty() && wrong_values.at("mem").empty()){
+        show_message("Sucesso na execução","Todos os valores correspondem ao caso de teste!");
+    }
+    else{
+        string msg;
+
+        auto aux = wrong_values.at("regi");
+        int i=0;
+
+        for(auto it = aux.cbegin(); it!=aux.cend(); ++it, i++){
+            msg += "R"+std::to_string(*it)+"\n";
+        }
+
+        aux = wrong_values.at("regpf");
+        for(auto it = aux.cbegin(); it!=aux.cend(); ++it, i++){
+            msg += "F"+std::to_string(*it)+"\n";
+        }
+
+        aux = wrong_values.at("mem");
+        for(auto it = aux.cbegin(); it!=aux.cend(); ++it, i++){
+            int abs = *it;
+            msg += "M["+std::to_string(abs/50)+"]["+std::to_string(abs%50)+"]\n";
+        }
+
+        show_message("Falha na execução","verifique o resultado dos seguintes registradores/endereços de memória: \n"+msg);
+    }
+    return true;
+}
+
+#define MHZ( clock ) ( clock * 1000000U )
+#define CYCLE_TIME( clock ) ( 1.0 / MHZ( clock ) )
+#define MIPS( clock, cpi ) ( MHZ(clock) / cpi / 1000000U )
+#define TO_NS( t ) ( t * 1000000000ULL )
+
+void show_metrics( top & top )
+{
+  const unsigned int total_cycles = ( sc_time_stamp().value() - 1 ) / 1000U;
+  const unsigned int total_instructions = top.get_queue().get_instruction_counter();
+  const unsigned int cpi = total_cycles / total_instructions;
+
+  const unsigned int mips = MIPS( cpu_freq, cpi );
+
+  const float cycle_time = TO_NS( CYCLE_TIME( cpu_freq ) );
+  const unsigned int cpu_time = total_cycles * cycle_time;
+
+  cout <<
+  "\n\n"
+  "Metricas:\n" <<
+  "Clock da CPU     - " << cpu_freq << " Mhz\n" <<
+  "Total ciclos     - " << total_cycles << "\n" <<
+  "Total instruções - " << total_instructions << "\n" <<
+  "CPI              - " << cpi << "\n" <<
+  "MIPS             - " << mips << "\n" <<
+  "Tempo de ciclo   - " << std::setprecision(2) << cycle_time << " ns\n" <<
+  "Tempo de CPU     - " << cpu_time << " ns" << endl;
 }

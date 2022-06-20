@@ -179,3 +179,9 @@ bool instruction_queue_rob::queue_is_empty( void )
   // cout << "Pc ==" << pc << " queue.size() == " << instruct_queue.size() << endl;
   return pc == instruct_queue.size();
 }
+
+unsigned int
+instruction_queue_rob::get_instruction_counter( void )
+{
+  return pc;
+}
