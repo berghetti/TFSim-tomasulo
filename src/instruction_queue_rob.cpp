@@ -165,6 +165,12 @@ void instruction_queue_rob::add_instructions(unsigned int pos, vector<instr_q> i
 // TODO: It'not OK
 bool instruction_queue_rob::queue_is_empty( void )
 {
-  cout << "Pc ==" << pc << " queue.size() == " << instruct_queue.size() << endl;
+  // cout << "Pc ==" << pc << " queue.size() == " << instruct_queue.size() << endl;
   return pc == instruct_queue.size();
+}
+
+unsigned int
+instruction_queue_rob::get_instruction_counter( void )
+{
+  return pc;
 }

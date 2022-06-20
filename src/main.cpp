@@ -30,6 +30,10 @@ void dump_regs(nana::listbox::cat_proxy reg_gui, nana::grid &memory);
 string get_file_name(string path);
 bool diff(nana::listbox::cat_proxy reg_gui, nana::grid &memory, string regi_path, string regpf_path, string mem_path);
 
+void show_metrics( top & );
+
+static unsigned int cpu_freq = 1000; // default 1Ghz used to compute metrics
+
 int sc_main(int argc, char *argv[])
 {
     using namespace nana;
@@ -445,15 +449,20 @@ int sc_main(int argc, char *argv[])
     for(int k = 1; k < argc; k+=2)
     {
         int i;
-        if (strlen(argv[k]) > 2)
+        if ( '-' != argv[k][0] )
             show_message("Opção inválida",string("Opção \"") + string(argv[k]) + string("\" inválida"));
         else
         {
             char c = argv[k][1];
 
-
             switch(c)
             {
+                case 'c':
+                  if ( !strcmp( argv[k], "-cpu") )
+                    {
+                      cpu_freq = std::stoi(argv[k+1]);
+                    }
+                  break;
                 case 'q':
                     inFile.open(argv[k+1]);
                     if(!add_instructions(inFile,instruction_queue,instruct))
@@ -601,12 +610,12 @@ int sc_main(int argc, char *argv[])
             show_message("Fila de instruções vazia","A fila de instruções está vazia. Insira um conjunto de instruções para iniciar.");
     });
 
-    clock_control.events().click([]
+    clock_control.events().click([&]
     {
       if ( top1.get_queue().queue_is_empty() &&
            top1.get_rob().rob_is_empty() )
         return;
-        
+
       if(sc_is_running())
           sc_start();
     });
@@ -622,7 +631,10 @@ int sc_main(int argc, char *argv[])
         }
 
         dump_regs(reg_gui, memory);
-        diff(reg_gui, memory, "out/"+get_file_name(regi_file_name), "out/"+get_file_name(regfp_file_name), "out/"+get_file_name(memory_file_name));
+        // diff(reg_gui, memory, "out/"+get_file_name(regi_file_name), "out/"+get_file_name(regfp_file_name), "out/"+get_file_name(memory_file_name));
+
+        show_metrics( top1 );
+
     });
 
     exit.events().click([]
@@ -632,6 +644,7 @@ int sc_main(int argc, char *argv[])
     });
     fm.show();
     exec();
+
     return 0;
 }
 
@@ -778,4 +791,32 @@ bool diff(nana::listbox::cat_proxy reg_gui, nana::grid &memory, string regi_path
         show_message("Falha na execução","verifique o resultado dos seguintes registradores/endereços de memória: \n"+msg);
     }
     return true;
+}
+
+#define MHZ( clock ) ( clock * 1000000U )
+#define CYCLE_TIME( clock ) ( 1.0 / MHZ( clock ) )
+#define MIPS( clock, cpi ) ( MHZ(clock) / cpi / 1000000U )
+#define TO_NS( t ) ( t * 1000000000ULL )
+
+void show_metrics( top & top )
+{
+  const unsigned int total_cycles = ( sc_time_stamp().value() - 1 ) / 1000U;
+  const unsigned int total_instructions = top.get_queue().get_instruction_counter();
+  const unsigned int cpi = total_cycles / total_instructions;
+
+  const unsigned int mips = MIPS( cpu_freq, cpi );
+
+  const float cycle_time = TO_NS( CYCLE_TIME( cpu_freq ) );
+  const unsigned int cpu_time = total_cycles * cycle_time;
+
+  cout <<
+  "\n\n"
+  "Metricas:\n" <<
+  "Clock da CPU     - " << cpu_freq << " Mhz\n" <<
+  "Total ciclos     - " << total_cycles << "\n" <<
+  "Total instruções - " << total_instructions << "\n" <<
+  "CPI              - " << cpi << "\n" <<
+  "MIPS             - " << mips << "\n" <<
+  "Tempo de ciclo   - " << std::setprecision(2) << cycle_time << " ns\n" <<
+  "Tempo de CPU     - " << cpu_time << " ns" << endl;
 }

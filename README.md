@@ -26,6 +26,8 @@ out-of-order execution on modern microprocessors.
 		- '-r' para número de unidades funcionais (3 inteiros, um para cada tipo (ADD,MULT,LOAD/STORE))
 		- '-l' para tempo de latência para cada instrução (uma linha para cada instrução, do formato <INSTRUÇÃO> <tempo de latência em ciclos>)
 		- '-s' indica que o programa execute em modo de especulação por hardware (com reorder buffer)
+		- '-cpu' informa a frequencia da CPU para calculo de metricas, converta a frequencia em mhz.  
+		         ex. para informar uma frequencia de 1.5Ghz use `-cpu 1500`
 		* O repositório fornece arquivos de teste já preenchidos na pasta 'in'
         * Também são fornecidos benchmarks para testes básicos (ideais para validação da ferramenta), incluidos em in/benchmarks
 * Observações:
