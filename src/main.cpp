@@ -467,7 +467,7 @@ int sc_main(int argc, char *argv[])
 
                     regi_file_name = argv[k+1];
                     //cout << "valor: " << get_file_name(regi_file_name) <<endl;
-                    
+
                     int value;
                     i = 0;
                     if(!inFile.is_open())
@@ -603,6 +603,10 @@ int sc_main(int argc, char *argv[])
 
     clock_control.events().click([]
     {
+      if ( top1.get_queue().queue_is_empty() &&
+           top1.get_rob().rob_is_empty() )
+        return;
+        
       if(sc_is_running())
           sc_start();
     });
@@ -616,7 +620,7 @@ int sc_main(int argc, char *argv[])
           if(sc_is_running())
               sc_start();
         }
-        
+
         dump_regs(reg_gui, memory);
         diff(reg_gui, memory, "out/"+get_file_name(regi_file_name), "out/"+get_file_name(regfp_file_name), "out/"+get_file_name(memory_file_name));
     });
@@ -633,7 +637,7 @@ int sc_main(int argc, char *argv[])
 
 /**
  * @brief Writes integer and floating point precision registers and memory status into its proper files. Uses folder results as storage.
- * 
+ *
  * @param reg_gui nana listbox handler
  * @param memory nana grid
  */
@@ -649,7 +653,7 @@ void dump_regs(nana::listbox::cat_proxy reg_gui, nana::grid &memory){
     out_file.open("result/reg_status.txt");
 
     cout << "Salvando os registradores e estado da memória" << endl;
-    
+
     for(i=0; i< 31; i++){
         out_file << reg_gui.at(i).text(1) << " ";
     }
@@ -672,15 +676,15 @@ void dump_regs(nana::listbox::cat_proxy reg_gui, nana::grid &memory){
     out_file << memory.Get(i);
     out_file.close();
 
-    
+
 
 }
 
 /**
- * @brief Get the file name object removing its path. 
- * 
+ * @brief Get the file name object removing its path.
+ *
  * @param path relative path from where a reg/mem file is stored
- * @return string 
+ * @return string
  */
 string get_file_name(string path){
     std::stringstream orig(path);
@@ -690,7 +694,7 @@ string get_file_name(string path){
         getline(orig, substr, '/');
         vec.push_back(substr);
     }
-    
+
     return vec.at(vec.size()-1);
 }
 
@@ -706,8 +710,8 @@ bool diff(nana::listbox::cat_proxy reg_gui, nana::grid &memory, string regi_path
     cout << mem_path<<endl;
 
     //só deve lançar erro caso o arquivo fonte tenha sido informado, mas seu equivalente de caso de teste não tenha sido encontrado.
-    if(! ( (std::filesystem::exists(regi_path)  || get_file_name(regi_path) ==  "NA") && 
-           (std::filesystem::exists(regfp_path) || get_file_name(regfp_path) == "NA") && 
+    if(! ( (std::filesystem::exists(regi_path)  || get_file_name(regi_path) ==  "NA") &&
+           (std::filesystem::exists(regfp_path) || get_file_name(regfp_path) == "NA") &&
            (std::filesystem::exists(mem_path)   || get_file_name(mem_path) == "NA") )){
         throw "Arquivos de comparação inexistentes. Por favor corrija o problema e execute novamente.";
     }
@@ -755,7 +759,7 @@ bool diff(nana::listbox::cat_proxy reg_gui, nana::grid &memory, string regi_path
 
         auto aux = wrong_values.at("regi");
         int i=0;
-        
+
         for(auto it = aux.cbegin(); it!=aux.cend(); ++it, i++){
             msg += "R"+std::to_string(*it)+"\n";
         }
@@ -770,7 +774,7 @@ bool diff(nana::listbox::cat_proxy reg_gui, nana::grid &memory, string regi_path
             int abs = *it;
             msg += "M["+std::to_string(abs/50)+"]["+std::to_string(abs%50)+"]\n";
         }
-        
+
         show_message("Falha na execução","verifique o resultado dos seguintes registradores/endereços de memória: \n"+msg);
     }
     return true;
