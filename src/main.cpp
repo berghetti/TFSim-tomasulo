@@ -26,6 +26,9 @@ using std::fstream;
 #define N_RS_MUL 2
 #define N_RS_LS 2
 
+float
+predictor_get_hit_rate( void );
+
 void dump_regs(nana::listbox::cat_proxy reg_gui, nana::grid &memory);
 string get_file_name(string path);
 bool diff(nana::listbox::cat_proxy reg_gui, nana::grid &memory, string regi_path, string regpf_path, string mem_path);
@@ -38,6 +41,10 @@ int sc_main(int argc, char *argv[])
 {
     using namespace nana;
     vector<string> instruction_queue;
+
+#ifdef USE_BPB
+    unsigned int len_bpb = 0; // 0 equal usage default lenght bpb
+#endif
 
     int nadd = N_RS_ADD;
     int nmul = N_RS_MUL;
@@ -574,6 +581,13 @@ int sc_main(int argc, char *argv[])
                     }
                     inFile.close();
                     break;
+#ifdef USE_BPB
+                case 'b':
+                    if ( !strcmp ( argv[k], "-bpb" ) )
+                      len_bpb = std::stoi( argv[ k + 1 ] );
+
+                  break;
+#endif
                 default:
                     show_message("Opção inválida",string("Opção \"") + string(argv[k]) + string("\" inválida"));
                     break;
@@ -583,6 +597,18 @@ int sc_main(int argc, char *argv[])
 
     clock_control.enabled(false);
     btn_full_execute.enabled(false);
+
+
+#ifdef USE_BPB
+    if ( !bpb_init( len_bpb ) )
+      {
+        cerr << "Error init BPB" << endl;
+        sc_stop();
+        API::exit();
+      }
+
+    cout << "Uisng BPB with lenght " << ( len_bpb ? std::to_string(len_bpb) : "default." ) << endl;
+#endif
 
     start.events().click([&]
     {
@@ -650,6 +676,10 @@ int sc_main(int argc, char *argv[])
     });
     fm.show();
     exec();
+
+#ifdef USE_BPB
+    bpb_free();
+#endif
 
     return 0;
 }
@@ -808,7 +838,7 @@ void show_metrics( top & top )
 {
   const unsigned int total_cycles = ( sc_time_stamp().value() - 1 ) / 1000U;
   const unsigned int total_instructions = top.get_queue().get_instruction_counter();
-  const unsigned int cpi = total_cycles / total_instructions;
+  const float cpi = ( float ) total_cycles / total_instructions;
 
   const unsigned int mips = MIPS( cpu_freq, cpi );
 
@@ -821,8 +851,10 @@ void show_metrics( top & top )
   "Clock da CPU     - " << cpu_freq << " Mhz\n" <<
   "Total ciclos     - " << total_cycles << "\n" <<
   "Total instruções - " << total_instructions << "\n" <<
-  "CPI              - " << cpi << "\n" <<
+  "CPI              - " << std::setprecision(2) << cpi << "\n" <<
   "MIPS             - " << mips << "\n" <<
   "Tempo de ciclo   - " << std::setprecision(2) << cycle_time << " ns\n" <<
-  "Tempo de CPU     - " << cpu_time << " ns" << endl;
+  "Tempo de CPU     - " << cpu_time << " ns\n"
+  "Prediction Sucess rate  - " << std::setprecision(2) << predictor_get_hit_rate() << "%"
+   << endl;
 }
