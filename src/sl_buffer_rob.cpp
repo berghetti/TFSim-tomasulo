@@ -56,8 +56,8 @@ void sl_buffer_rob::leitura_issue()
     {
         in_issue->nb_read(p);
         ord = instruction_split(p);
-        cout << "Issue da instrução " << ord[0] << " no ciclo " << sc_time_stamp() << " para " << ptrs[pos]->type_name << endl << flush;
         pos = busy_check();
+        cout << "Issue da instrução " << ord[0] << " no ciclo " << sc_time_stamp() << " para " << ptrs[pos]->type_name << endl << flush;
         while(pos == -1)
         {
             cout << "Todas as estacoes ocupadas para a instrucao " << p << " no ciclo " << sc_time_stamp() << endl << flush;
