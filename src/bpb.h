@@ -29,7 +29,7 @@ bpb_get_prediction( unsigned int pc );
 * @parm pred, if instruction was or not actually taken
 */
 void
-bpb_update_prediction( unsigned int pc, bool pred );
+bpb_update_prediction( unsigned int pc, bool taken, bool hit );
 
 /*
 * @brief Return sucess rate BPB

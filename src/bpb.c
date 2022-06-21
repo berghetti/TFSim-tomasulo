@@ -25,8 +25,9 @@ How this work:
     state == 3 - return Taken
 */
 
-#include <stdbool.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 #define DEFAULT_SIZE_BPB 10
 #define N_BITS 2
@@ -34,7 +35,7 @@ How this work:
 #define MAX ( ( 1 << N_BITS ) -1 )
 #define MSB ( 1 << ( N_BITS - 1 ) ) /* most significant bit */
 
-static int *bpb;
+static uint8_t *bpb;
 static unsigned int size_bpb;
 
 static unsigned int tot_predictions;
@@ -58,12 +59,12 @@ bpb_get_prediction( unsigned int pc )
 }
 
 void
-bpb_update_prediction( unsigned int pc, bool taken )
+bpb_update_prediction( unsigned int pc, bool taken, bool hit )
 {
   unsigned int i = pc % size_bpb;
-  int state = bpb[i];
+  uint8_t state = bpb[i];
 
-  tot_hit += ( !!( state & MSB ) == taken );
+  tot_hit += hit;
 
   if ( taken )
     state += ( state < MAX );

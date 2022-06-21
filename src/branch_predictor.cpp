@@ -14,9 +14,9 @@ bool branch_predictor::predict()
     tot_predictions++;
     return state&(1<<(n_bits-1));
 }
-void branch_predictor::update_state(bool taken)
+void branch_predictor::update_state(bool taken, bool hit)
 {
-    tot_hit += ( !!( state & ( 1<<( n_bits - 1 ) ) ) == taken );
+    tot_hit += hit;
 
     if(taken)
     {

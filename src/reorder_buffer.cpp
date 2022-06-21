@@ -198,7 +198,7 @@ void reorder_buffer::leitura_issue()
 void reorder_buffer::new_rob_head()
 {
     unsigned int instr_type;
-    bool pred;
+    bool pred, hit;
     auto cat = gui_table.at(0);
     while(true)
     {
@@ -224,8 +224,6 @@ void reorder_buffer::new_rob_head()
               instr_queue_gui.at(rob_buff[0]->instr_pos).text(EXEC,"X");
               instr_queue_gui.at(rob_buff[0]->instr_pos).text(WRITE,"X");
 
-              cout << "Here" << endl;
-
               instr_type = branch_instr[ rob_buff[0]->instruction ];
 
               if( instr_type < 2 ) // BEQ or BNE
@@ -233,8 +231,10 @@ void reorder_buffer::new_rob_head()
               else
                   pred = branch( instr_type, (float)rob_buff[0]->vj );
 
+             hit = ( pred == rob_buff[0]->prediction );
+
               // if branch diferent of speculation, flush rob
-              if( pred != rob_buff[0]->prediction )
+              if( false == hit )
               {
                   if(pred)
                       out_iq->write(rob_buff[0]->destination + ' ' + std::to_string(rob_buff[0]->entry));
@@ -248,11 +248,13 @@ void reorder_buffer::new_rob_head()
                   out_rb->write("F");
                   out_adu->write("F");
               }
+
+              cout << "Atualizando preditor" << endl << flush;
 #ifndef USE_BPB
               // original predictor
-              preditor.update_state(pred);
+              preditor.update_state( pred, hit );
 #else
-              bpb_update_prediction( rob_buff[0]->pc, pred );
+              bpb_update_prediction( rob_buff[0]->pc, pred, hit );
 #endif
               break;
 
