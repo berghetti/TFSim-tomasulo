@@ -63,7 +63,7 @@ bpb_update_prediction( unsigned int pc, bool taken )
   unsigned int i = pc % size_bpb;
   int state = bpb[i];
 
-  tot_hit += ( ( bpb[i] & MSB ) == taken );
+  tot_hit += ( !!( state & MSB ) == taken );
 
   if ( taken )
     state += ( state < MAX );

@@ -31,6 +31,9 @@ bpb_get_prediction( unsigned int pc );
 void
 bpb_update_prediction( unsigned int pc, bool pred );
 
+/*
+* @brief Return sucess rate BPB
+*/
 float
 bpb_get_hit_rate( void );
 

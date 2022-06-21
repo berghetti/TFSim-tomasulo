@@ -28,6 +28,11 @@ using std::fstream;
 #define N_RS_MUL 2
 #define N_RS_LS 2
 
+#ifndef USE_BPB
+float
+predictor_get_hit_rate( void );
+#endif
+
 void dump_regs(nana::listbox::cat_proxy reg_gui, nana::grid &memory);
 string get_file_name(string path);
 bool diff(nana::listbox::cat_proxy reg_gui, nana::grid &memory, string regi_path, string regpf_path, string mem_path);
@@ -837,7 +842,7 @@ void show_metrics( top & top )
 {
   const unsigned int total_cycles = ( sc_time_stamp().value() - 1 ) / 1000U;
   const unsigned int total_instructions = top.get_queue().get_instruction_counter();
-  const unsigned int cpi = total_cycles / total_instructions;
+  const float cpi = ( float ) total_cycles / total_instructions;
 
   const unsigned int mips = MIPS( cpu_freq, cpi );
 
@@ -850,8 +855,14 @@ void show_metrics( top & top )
   "Clock da CPU     - " << cpu_freq << " Mhz\n" <<
   "Total ciclos     - " << total_cycles << "\n" <<
   "Total instruções - " << total_instructions << "\n" <<
-  "CPI              - " << cpi << "\n" <<
+  "CPI              - " << std::setprecision(2) << cpi << "\n" <<
   "MIPS             - " << mips << "\n" <<
   "Tempo de ciclo   - " << std::setprecision(2) << cycle_time << " ns\n" <<
-  "Tempo de CPU     - " << cpu_time << " ns" << endl;
+  "Tempo de CPU     - " << cpu_time << " ns\n"
+#ifndef USE_BPB
+  "BPB Sucess rate  - " << std::setprecision(2) << predictor_get_hit_rate() << "%"
+#else
+  "BPB Sucess rate  - " << std::setprecision(2) << bpb_get_hit_rate() << "%"
+#endif
+   << endl;
 }
