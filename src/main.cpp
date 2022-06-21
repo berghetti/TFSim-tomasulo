@@ -860,7 +860,7 @@ void show_metrics( top & top )
   "Tempo de ciclo   - " << std::setprecision(2) << cycle_time << " ns\n" <<
   "Tempo de CPU     - " << cpu_time << " ns\n"
 #ifndef USE_BPB
-  "BPB Sucess rate  - " << std::setprecision(2) << predictor_get_hit_rate() << "%"
+  "Prediction Sucess rate  - " << std::setprecision(2) << predictor_get_hit_rate() << "%"
 #else
   "BPB Sucess rate  - " << std::setprecision(2) << bpb_get_hit_rate() << "%"
 #endif

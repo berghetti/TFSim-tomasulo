@@ -11,11 +11,11 @@ branch_predictor::branch_predictor(unsigned int t): n_bits(t)
 
 bool branch_predictor::predict()
 {
+    tot_predictions++;
     return state&(1<<(n_bits-1));
 }
 void branch_predictor::update_state(bool taken)
 {
-  tot_predictions++;
     tot_hit += ( !!( state & ( 1<<( n_bits - 1 ) ) ) == taken );
 
     if(taken)
