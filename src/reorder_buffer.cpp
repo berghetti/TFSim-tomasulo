@@ -168,12 +168,12 @@ void reorder_buffer::leitura_issue()
             // this go to 'instructions_queue_rob::leitura_rob'
             if( ptrs[pos]->prediction )
               {
-                cout << "Prediction taken to instruction " << ptrs[pos]->instruction << endl;
+                cout << "Prediction taken to instruction " << ptrs[pos]->instr_pos << " | " << ptrs[pos]->instruction << endl;
                 out_iq->write("S " + std::to_string(ptrs[pos]->entry) +  ' ' + ptrs[pos]->destination);
               }
             else
               {
-                cout << "Prediction not taken to instruction " << ptrs[pos]->instruction << endl;
+                cout << "Prediction not taken to instruction " << ptrs[pos]->instr_pos << " | " << ptrs[pos]->instruction << endl;
                 out_iq->write("S " + std::to_string(ptrs[pos]->entry) );
               }
 
@@ -234,7 +234,7 @@ void reorder_buffer::new_rob_head()
              hit = ( pred == rob_buff[0]->prediction );
 
               // if branch diferent of speculation, flush rob
-              if( false == hit )
+              if( !hit )
               {
                   if(pred)
                       out_iq->write(rob_buff[0]->destination + ' ' + std::to_string(rob_buff[0]->entry));
