@@ -5,7 +5,7 @@ Considerations:
   BPB can be configured to usage desired amount bits to change prediction,
   changing N_BITS define and recompiling simulator.
 
-  BPB start with state 0 ( not taken ), to change this initialize memory of bpb
+  BPB start with state 1 ( not taken weak ), to change this initialize memory of bpb
   on function bpb_init to value desired.
 
 How this work:
@@ -25,9 +25,10 @@ How this work:
     state == 3 - return Taken
 */
 
-#include <stdlib.h>
 #include <stdbool.h>
-#include <stdint.h>
+#include <stdlib.h>   // malloc / free
+#include <stdint.h>   // uint8_t
+#include <string.h>   // memset
 
 #define DEFAULT_SIZE_BPB 10
 #define N_BITS 2
@@ -45,10 +46,14 @@ bool
 bpb_init( unsigned int size )
 {
   size_bpb = size ? size : DEFAULT_SIZE_BPB;
+  size_t len = size_bpb * sizeof *bpb;
 
-  bpb = calloc( size, sizeof *bpb );
+  bpb = malloc( len );
 
-  return !!bpb;
+  if ( bpb )
+    memset( bpb, 1, len );
+
+  return bpb;
 }
 
 bool
