@@ -849,6 +849,7 @@ void show_metrics( top & top )
   const float cycle_time = TO_NS( CYCLE_TIME( cpu_freq ) );
   const unsigned int cpu_time = total_cycles * cycle_time;
 
+  cout << std::fixed;
   cout <<
   "\n\n"
   "Metricas:\n" <<
