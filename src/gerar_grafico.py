@@ -6,19 +6,20 @@ import numpy as np
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--experiment_folder', default='../result', type=str)
+parser.add_argument('--experiment_folder', default='../experiments', type=str)
 
 args = parser.parse_args()
 
-exp_folder = args.experiment_folder
+base_folder = args.experiment_folder
 
 COLOR_PALETTE = ['#033B8F', '#8F2618']
 
 
 #pega todas as pastas dentro de results
-subdirs = [exp_folder+'/'+el for x in os.walk(exp_folder) for el in x[1]]
+exp_names = [x[1] for x in os.walk(base_folder) ][0]
 
-exp_names = []
+
+
 
 class Metrics():
     def __init__(self, bit, bpb_size) -> None:
@@ -33,22 +34,24 @@ class Metrics():
         return "CPI: "+str(self.cpi)+"\nMIPS: "+str(self.mips)+"\nTempo de CPU:"+str(self.tcpu)+"\nACC: "+str(self.acc)
     
         
+exp_names = [el+'/results'for el in exp_names]
+subdirs = [os.path.join(base_folder, el) for el in exp_names]
+
 
 for subdir in subdirs:
     files = [str(el) for x in os.walk(subdir) for el in x[2] if "result" in str(el)]
 
-    exp_name = subdir.split('/')[-1]
+    exp_name = subdir.split('/')[-2]
 
     exp_names.append(exp_name)
-
 
     values = []
     
     values_x = []
     labels = []
     bits = []
+    
     for file in files:
-
         st = file.find('_')+1
         end= file.find('_', st)
         bit = int(file[st:end])
@@ -118,26 +121,30 @@ for subdir in subdirs:
     x_labels = [v.bpb_size for val in values_sorted for v in val]
     barWidth = 0.25
 
-    x_axis = np.arange(len(np.unique(x_labels))) # supondo que seja sempre 2 bits
+    x_axis = np.arange(len(np.unique(x_labels))) # 1 ou 2 bits. Vai incrementar em módulo n_bits
+    
     for i in range(n_bits-1):
-        x_axis= np.concatenate([x_axis, [val+barWidth for val in x_axis]])
+        x_axis= np.concatenate([x_axis, [val+barWidth*(i+1) for val in x_axis]])
     
 
     plt.figure()
     if n_bits >0:
-        n_clusters = len(np.unique(x_labels))-1
+        n_clusters = len(np.unique(x_labels))
         if n_bits>1:
-            ticks = [(x_axis[i]+x_axis[i+n_clusters*n_bits])/2 for i in range(len(np.unique(x_labels)))]
+            ticks = [(x_axis[i]+x_axis[i+n_clusters])/2 for i in range(len(np.unique(x_labels)))]
         else:
             ticks = x_axis
 
         plt.title(f'Teste: {exp_name}\nCiclos por instrução (CPI)', fontsize=18)
         for i, bit in enumerate(bits):
-            y = []
+            y = np.array([])
             for el in values_sorted[bit-1]:
-                y = np.array([el.cpi])
-            y = y.flatten()
-            plt.bar(x_axis[i*n_bits:i*n_bits+2], y, color=COLOR_PALETTE[i], edgecolor ='grey', width = barWidth, label=  '#Bits: '+str(bit))
+                y = np.append(y, el.cpi)
+                
+            idx = list(range(i, len(x_axis), 2))
+            
+            x_arr = np.array(x_axis)
+            plt.bar(x_axis[i*n_clusters:i*n_clusters+n_clusters], y, color=COLOR_PALETTE[i], edgecolor ='grey', width = barWidth, label=  '#Bits: '+str(bit))
 
         plt.xticks(ticks, np.unique(x_labels))
         plt.xlabel('Tamanho do BPB', fontsize=16)
@@ -149,11 +156,14 @@ for subdir in subdirs:
 
         plt.title(f'Teste: {exp_name}\nMilhões de Instruções por Segundo (MIPS)', fontsize=18)
         for i, bit in enumerate(bits):
-            y = []
+            y = np.array([])
             for el in values_sorted[bit-1]:
-                y = np.array([el.mips])
-            y = y.flatten()
-            plt.bar(x_axis[i*n_bits:i*n_bits+2], y, color=COLOR_PALETTE[i], edgecolor ='grey', width = barWidth*0.97, label=  '#Bits: '+str(bit))
+                y = np.append(y, el.mips)
+                
+            idx = list(range(i, len(x_axis), 2))
+            
+            x_arr = np.array(x_axis)
+            plt.bar(x_axis[i*n_clusters:i*n_clusters+n_clusters], y, color=COLOR_PALETTE[i], edgecolor ='grey', width = barWidth, label=  '#Bits: '+str(bit))
 
         plt.xticks(ticks, x_labels)
         plt.xlabel('Tamanho do BPB', fontsize=16)
@@ -165,11 +175,14 @@ for subdir in subdirs:
 
         plt.title(f'Teste: {exp_name}\nTempo de CPU', fontsize=18)
         for i, bit in enumerate(bits):
-            y = []
+            y = np.array([])
             for el in values_sorted[bit-1]:
-                y = np.array([el.tcpu])
-            y = y.flatten()
-            plt.bar(x_axis[i*n_bits:i*n_bits+2], y, color=COLOR_PALETTE[i], edgecolor ='grey', width = barWidth*0.97, label=  '#Bits: '+str(bit))
+                y = np.append(y, el.tcpu)
+                
+            idx = list(range(i, len(x_axis), 2))
+            
+            x_arr = np.array(x_axis)
+            plt.bar(x_axis[i*n_clusters:i*n_clusters+n_clusters], y, color=COLOR_PALETTE[i], edgecolor ='grey', width = barWidth, label=  '#Bits: '+str(bit))
 
         plt.xticks(ticks, x_labels)
         plt.xlabel('Tamanho do BPB', fontsize=16)
@@ -181,11 +194,14 @@ for subdir in subdirs:
 
         plt.title(f'Teste: {exp_name}\nTaxa de acertos', fontsize=18)
         for i, bit in enumerate(bits):
-            y = []
+            y = np.array([])
             for el in values_sorted[bit-1]:
-                y = np.array([el.acc])
-            y = y.flatten()
-            plt.bar(x_axis[i*n_bits:i*n_bits+2], y, color=COLOR_PALETTE[i], edgecolor ='grey', width = barWidth*0.97, label=  '#Bits: '+str(bit))
+                y = np.append(y, el.acc)
+                
+            idx = list(range(i, len(x_axis), 2))
+            
+            x_arr = np.array(x_axis)
+            plt.bar(x_axis[i*n_clusters:i*n_clusters+n_clusters], y, color=COLOR_PALETTE[i], edgecolor ='grey', width = barWidth, label=  '#Bits: '+str(bit))
 
         plt.xticks(ticks, x_labels)
         plt.xlabel('Tamanho do BPB', fontsize=16)
