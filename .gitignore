@@ -5,5 +5,5 @@ tfsim
 result/
 !result/.gitkeep
 
-out/*
-!out/.gitkeep
+./out/*
+!./out/.gitkeep
