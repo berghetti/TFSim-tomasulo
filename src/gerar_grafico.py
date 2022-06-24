@@ -125,7 +125,11 @@ for subdir in subdirs:
 
     plt.figure()
     if n_bits >0:
-        ticks = [(x_axis[i]+x_axis[i]+x_axis[n_bits-1])/2 for i in range(len(np.unique(x_labels)))]
+        n_clusters = len(np.unique(x_labels))-1
+        if n_bits>1:
+            ticks = [(x_axis[i]+x_axis[i+n_clusters*n_bits])/2 for i in range(len(np.unique(x_labels)))]
+        else:
+            ticks = x_axis
 
         plt.title(f'Teste: {exp_name}\nCiclos por instrução (CPI)', fontsize=18)
         for i, bit in enumerate(bits):
@@ -133,10 +137,9 @@ for subdir in subdirs:
             for el in values_sorted[bit-1]:
                 y = np.array([el.cpi])
             y = y.flatten()
-            plt.bar(x_axis[i*n_bits:i*n_bits+2], y, color=COLOR_PALETTE[i], edgecolor ='grey', width = barWidth*0.97, label=  '#Bits: '+str(bit))
+            plt.bar(x_axis[i*n_bits:i*n_bits+2], y, color=COLOR_PALETTE[i], edgecolor ='grey', width = barWidth, label=  '#Bits: '+str(bit))
 
-        
-        plt.xticks(ticks, x_labels)
+        plt.xticks(ticks, np.unique(x_labels))
         plt.xlabel('Tamanho do BPB', fontsize=16)
         plt.ylabel('CPI', fontsize=16)
         plt.legend(loc='upper right')
