@@ -4,9 +4,9 @@
 // r7 - value to find
 // void linear_search( int *r5, int r6, int r7 )
 // {
-//   bool r1 = 0;
+//   int r1 = 0;
 //
-//   for( unsigned r11 = 0; r11 != r6; r11++ )
+//   for( int r11 = 0; r11 != r6; r11++ )
 //     {
 //       uintptr_t r20 = ( uintptr_t ) r5 + r11;
 //       unsigned r21 = *( unsigned *)r20;
@@ -19,20 +19,21 @@
 //     }
 // }
 //
-// first execution of loop considers r6 > 0
 //
 //init R11 = R1 = 0
 DADD R11 R0 R0
 DADD R1 R0 R0
+BEQ R11 R6 9
 //
 DADD R20 R5 R11
 LD R21 0(R20)
 BEQ R21 R7 4
-//
 DADDI R11 R11 1
 BNE R11 R6 -4
 // workaround miss instruction JMP
-BEQ R0 R0 2
+BEQ R0 R0 3
 //
+DADD R0 R0 R0
 DADDI R1 R0 1
-DADD R1 R0 R1
+// nop
+DADD R0 R0 R0
