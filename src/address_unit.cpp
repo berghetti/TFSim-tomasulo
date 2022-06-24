@@ -60,6 +60,7 @@ void address_unit::leitura_issue()
             store = true;
         else
             store = false;
+
         if(!store)
         {
             rst_pos = std::stoi(ord[6]);
@@ -67,12 +68,18 @@ void address_unit::leitura_issue()
         }
         else
             rst_pos = -1;
+
         if(regst == 0 || check_value == true)
         {
             if(check_value == false)
                 value = ask_value(mem_ord[1]);
             wait(SC_ZERO_TIME);
+            // wait(1,SC_NS);
+            if ( (unsigned) instr_pos >= instruct_table.size() ) // very very ugly
+              instr_pos = instruct_table.size() - 1;
+
             instruct_table.at(instr_pos).text(EXEC,"X");
+
             a += value;
             if(store)
             {
@@ -112,6 +119,7 @@ void address_unit::leitura_cdb()
             {
                 offset_buff[i].a+= std::stoi(ord_c[1]);
                 wait(SC_ZERO_TIME);
+                // wait(1,SC_NS);
                 instruct_table.at(offset_buff[i].instr_pos).text(EXEC,"X");
                 if(offset_buff[i].store)
                 {
@@ -218,7 +226,9 @@ void address_unit::check_loads()
     for(unsigned i = 0 ; i < offset_buff.size() && !offset_buff[i].store ; i++)
         if(offset_buff[i].addr_calc)
         {
-            instruct_table.at(offset_buff[i].instr_pos).text(EXEC,"X");
+            // if ( (unsigned) offset_buff[i].instr_pos < instruct_table.size() ) // very very ugly
+              instruct_table.at(offset_buff[i].instr_pos).text(EXEC,"X");
+
             if(addr_queue.empty())
                 addr_queue_event.notify(delay_time,SC_NS);
             addr_queue.push(offset_buff[i]);
