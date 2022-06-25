@@ -12,7 +12,14 @@ args = parser.parse_args()
 
 base_folder = args.experiment_folder
 
-COLOR_PALETTE = ['#033B8F', '#8F2618']
+COLOR_PALETTE = ['#0056F5', '#001336', '#7600F5', '#1B0038', '#F5880C', '#3D2203', '#F5C61B', '#3D3107']
+
+I = 0
+def get_color():
+    global I
+    color = COLOR_PALETTE[I]
+    I = ( I + 1 ) % 8
+    return color
 
 
 #pega todas as pastas dentro de ../experiments/
@@ -87,7 +94,6 @@ for subdir in subdirs:
             st = content.find('Total ciclos')
             st = content.find('-', st)+1
             end = content.find('\n', st)
-            print(end)
             value = int(content[st: end])
 
             metric.tcpu.append(value)
@@ -147,7 +153,7 @@ for subdir in subdirs:
             idx = list(range(i, len(x_axis), 2))
 
             x_arr = np.array(x_axis)
-            plt.bar(x_axis[i*n_clusters:i*n_clusters+n_clusters], y, color=COLOR_PALETTE[i], edgecolor ='grey', width = barWidth, label=  '#Bits: '+str(bit))
+            plt.bar(x_axis[i*n_clusters:i*n_clusters+n_clusters], y, color=get_color(), edgecolor ='grey', width = barWidth, label=  '#Bits: '+str(bit))
 
         plt.xticks(ticks, np.unique(x_labels))
         plt.xlabel('Tamanho do BPB', fontsize=16)
@@ -167,7 +173,7 @@ for subdir in subdirs:
             idx = list(range(i, len(x_axis), 2))
 
             x_arr = np.array(x_axis)
-            plt.bar(x_axis[i*n_clusters:i*n_clusters+n_clusters], y, color=COLOR_PALETTE[i], edgecolor ='grey', width = barWidth, label=  '#Bits: '+str(bit))
+            plt.bar(x_axis[i*n_clusters:i*n_clusters+n_clusters], y, color=get_color(), edgecolor ='grey', width = barWidth, label=  '#Bits: '+str(bit))
 
         plt.xticks(ticks, np.unique(x_labels))
         plt.xlabel('Tamanho do BPB', fontsize=16)
@@ -182,13 +188,12 @@ for subdir in subdirs:
         for i, bit in enumerate(bits):
             y = np.array([])
             for el in values_sorted[bit-1]:
-                print( el.tcpu)
                 y = np.append(y, el.tcpu)
 
             idx = list(range(i, len(x_axis), 2))
 
             x_arr = np.array(x_axis)
-            plt.bar(x_axis[i*n_clusters:i*n_clusters+n_clusters], y, color=COLOR_PALETTE[i], edgecolor ='grey', width = barWidth, label=  '#Bits: '+str(bit))
+            plt.bar(x_axis[i*n_clusters:i*n_clusters+n_clusters], y, color=get_color(), edgecolor ='grey', width = barWidth, label=  '#Bits: '+str(bit))
 
         plt.xticks(ticks, np.unique(x_labels))
         plt.xlabel('Tamanho do BPB', fontsize=16)
@@ -208,7 +213,7 @@ for subdir in subdirs:
             idx = list(range(i, len(x_axis), 2))
 
             x_arr = np.array(x_axis)
-            plt.bar(x_axis[i*n_clusters:i*n_clusters+n_clusters], y, color=COLOR_PALETTE[i], edgecolor ='grey', width = barWidth, label=  '#Bits: '+str(bit))
+            plt.bar(x_axis[i*n_clusters:i*n_clusters+n_clusters], y, color=get_color(), edgecolor ='grey', width = barWidth, label=  '#Bits: '+str(bit))
 
         plt.xticks(ticks, np.unique(x_labels))
         plt.xlabel('Tamanho do BPB', fontsize=16)
