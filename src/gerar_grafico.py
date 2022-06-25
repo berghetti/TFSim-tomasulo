@@ -128,6 +128,10 @@ for subdir in subdirs:
 
     plt.figure()
     if n_bits >0:
+
+        if not os.path.exists(f'{base_folder}/{exp_name}/charts/'):
+            os.mkdir(f'{base_folder}/{exp_name}/charts/')
+
         n_clusters = len(np.unique(x_labels))
         if n_bits>1:
             ticks = [(x_axis[i]+x_axis[i+n_clusters])/2 for i in range(len(np.unique(x_labels)))]
