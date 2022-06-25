@@ -197,7 +197,7 @@ for subdir in subdirs:
 
         plt.xticks(ticks, np.unique(x_labels))
         plt.xlabel('Tamanho do BPB', fontsize=16)
-        plt.ylabel('ciclos', fontsize=16)
+        plt.ylabel('CICLOS', fontsize=16)
         plt.legend(loc='best') # plt.legend(loc='upper right')
         plt.savefig(f'{base_folder}/{exp_name}/charts/CYCLES.png')
         # plt.show()
