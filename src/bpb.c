@@ -31,7 +31,7 @@ How this work:
 #include <string.h>   // memset
 
 #define DEFAULT_SIZE_BPB 10
-#define N_BITS 2
+#define N_BITS 2 // set one or two
 
 #define MAX ( ( 1 << N_BITS ) -1 )
 #define MSB ( 1 << ( N_BITS - 1 ) ) /* most significant bit */
@@ -51,7 +51,7 @@ bpb_init( unsigned int size )
   bpb = malloc( len );
 
   if ( bpb )
-    memset( bpb, 1, len );
+    memset( bpb, N_BITS - 1, len );
 
   return bpb;
 }
