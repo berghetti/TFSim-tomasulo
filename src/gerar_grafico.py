@@ -1,5 +1,6 @@
 from turtle import color
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 import argparse
 import os
 import numpy as np
@@ -144,7 +145,8 @@ for subdir in subdirs:
         else:
             ticks = x_axis
 
-        plt.title(f'Teste: {exp_name}\nCiclos por instrução (CPI)', fontsize=18)
+        # plt.title(f'Teste: {exp_name}\nCiclos por instrução (CPI)', fontsize=18)
+        ax = plt.subplots()
         for i, bit in enumerate(bits):
             y = np.array([])
             for el in values_sorted[bit-1]:
@@ -155,6 +157,13 @@ for subdir in subdirs:
             x_arr = np.array(x_axis)
             plt.bar(x_axis[i*n_clusters:i*n_clusters+n_clusters], y, color=get_color(), edgecolor ='grey', width = barWidth, label=  '#Bits: '+str(bit))
 
+        # set intermediary y ticks whitout labels
+        interval_yaxis = int( plt.yticks()[0][1] )
+        if ( interval_yaxis > 1):
+            ax[1].yaxis.set_major_locator(mticker.MultipleLocator( interval_yaxis ) )
+            ax[1].yaxis.set_minor_locator(mticker.MultipleLocator( interval_yaxis / 2 ) )
+            ax[1].yaxis.set_minor_formatter(mticker.NullFormatter())
+
         plt.xticks(ticks, np.unique(x_labels))
         plt.xlabel('Tamanho do BPB', fontsize=16)
         plt.ylabel('CPI', fontsize=16)
@@ -164,7 +173,8 @@ for subdir in subdirs:
         # plt.show()
         plt.clf() # clear plot memory
 
-        plt.title(f'Teste: {exp_name}\nMilhões de Instruções por Segundo (MIPS)', fontsize=18)
+        # plt.title(f'Teste: {exp_name}\nMilhões de Instruções por Segundo (MIPS)', fontsize=18)
+        ax = plt.subplots()
         for i, bit in enumerate(bits):
             y = np.array([])
             for el in values_sorted[bit-1]:
@@ -175,6 +185,13 @@ for subdir in subdirs:
             x_arr = np.array(x_axis)
             plt.bar(x_axis[i*n_clusters:i*n_clusters+n_clusters], y, color=get_color(), edgecolor ='grey', width = barWidth, label=  '#Bits: '+str(bit))
 
+        # set intermediary y ticks whitout labels
+        interval_yaxis = int( plt.yticks()[0][1] )
+        if ( interval_yaxis > 1):
+            ax[1].yaxis.set_major_locator(mticker.MultipleLocator( interval_yaxis ) )
+            ax[1].yaxis.set_minor_locator(mticker.MultipleLocator( interval_yaxis / 2 ) )
+            ax[1].yaxis.set_minor_formatter(mticker.NullFormatter())
+
         plt.xticks(ticks, np.unique(x_labels))
         plt.xlabel('Tamanho do BPB', fontsize=16)
         plt.ylabel('MIPS', fontsize=16)
@@ -184,7 +201,8 @@ for subdir in subdirs:
         plt.clf()
 
 
-        plt.title(f'Teste: {exp_name}\nCiclos de CPU', fontsize=18)
+        # plt.title(f'Teste: {exp_name}\nCiclos de CPU', fontsize=18)
+        ax = plt.subplots()
         for i, bit in enumerate(bits):
             y = np.array([])
             for el in values_sorted[bit-1]:
@@ -195,6 +213,13 @@ for subdir in subdirs:
             x_arr = np.array(x_axis)
             plt.bar(x_axis[i*n_clusters:i*n_clusters+n_clusters], y, color=get_color(), edgecolor ='grey', width = barWidth, label=  '#Bits: '+str(bit))
 
+        # set intermediary y ticks whitout labels
+        interval_yaxis = int( plt.yticks()[0][1] )
+        if ( interval_yaxis > 1):
+            ax[1].yaxis.set_major_locator(mticker.MultipleLocator( interval_yaxis ) )
+            ax[1].yaxis.set_minor_locator(mticker.MultipleLocator( interval_yaxis / 2 ) )
+            ax[1].yaxis.set_minor_formatter(mticker.NullFormatter())
+
         plt.xticks(ticks, np.unique(x_labels))
         plt.xlabel('Tamanho do BPB', fontsize=16)
         plt.ylabel('Ciclos', fontsize=16)
@@ -204,7 +229,8 @@ for subdir in subdirs:
         plt.clf()
 
 
-        plt.title(f'Teste: {exp_name}\nTaxa de acertos', fontsize=18)
+        # plt.title(f'Teste: {exp_name}\nTaxa de acertos', fontsize=18)
+        ax = plt.subplots()
         for i, bit in enumerate(bits):
             y = np.array([])
             for el in values_sorted[bit-1]:
@@ -214,6 +240,13 @@ for subdir in subdirs:
 
             x_arr = np.array(x_axis)
             plt.bar(x_axis[i*n_clusters:i*n_clusters+n_clusters], y, color=get_color(), edgecolor ='grey', width = barWidth, label=  '#Bits: '+str(bit))
+
+        # set intermediary y ticks whitout labels
+        interval_yaxis = int( plt.yticks()[0][1] )
+        if ( interval_yaxis > 1):
+            ax[1].yaxis.set_major_locator(mticker.MultipleLocator( interval_yaxis ) )
+            ax[1].yaxis.set_minor_locator(mticker.MultipleLocator( interval_yaxis / 2 ) )
+            ax[1].yaxis.set_minor_formatter(mticker.NullFormatter())
 
         plt.xticks(ticks, np.unique(x_labels))
         plt.xlabel('Tamanho do BPB', fontsize=16)
