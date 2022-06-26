@@ -8,10 +8,7 @@
 //
 //   for( int r11 = 0; r11 != r6; r11++ )
 //     {
-//       uintptr_t r20 = ( uintptr_t ) r5 + r11;
-//       unsigned r21 = *( unsigned *)r20;
-//
-//       if ( r21 == r7 )
+//       if ( r5[r11] == r7 )
 //         {
 //           r1 = 1;
 //           break;
