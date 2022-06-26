@@ -90,8 +90,12 @@ void res_station_rob::exec()
         if(!isFlushed)
           {
             // very ugly
-            if ( instr_pos < instr_queue_gui.size() )
+            // if ( instr_pos < instr_queue_gui.size() )
+            try {
               instr_queue_gui.at(instr_pos).text(WRITE,"X");
+            }
+            catch (...){}
+
           }
 
         Busy = isFlushed = false;

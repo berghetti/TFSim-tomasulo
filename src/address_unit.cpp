@@ -75,10 +75,13 @@ void address_unit::leitura_issue()
                 value = ask_value(mem_ord[1]);
             wait(SC_ZERO_TIME);
             // wait(1,SC_NS);
-            if ( (unsigned) instr_pos >= instruct_table.size() ) // very very ugly
-              instr_pos = instruct_table.size() - 1;
+            // if ( (unsigned) instr_pos >= instruct_table.size() ) // very very ugly
+              // instr_pos = instruct_table.size() - 1;
+            try {
+                instruct_table.at(instr_pos).text(EXEC,"X");
+            }
+            catch (...) {}
 
-            instruct_table.at(instr_pos).text(EXEC,"X");
 
             a += value;
             if(store)
