@@ -229,7 +229,7 @@ void address_unit::check_loads()
     for(unsigned i = 0 ; i < offset_buff.size() && !offset_buff[i].store ; i++)
         if(offset_buff[i].addr_calc)
         {
-            // if ( (unsigned) offset_buff[i].instr_pos < instruct_table.size() ) // very very ugly
+            if ( (unsigned) offset_buff[i].instr_pos < instruct_table.size() ) // very very ugly
               instruct_table.at(offset_buff[i].instr_pos).text(EXEC,"X");
 
             if(addr_queue.empty())
