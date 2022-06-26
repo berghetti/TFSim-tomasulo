@@ -1,0 +1,9 @@
+Metricas:
+Clock da CPU     - 1000 Mhz
+Total ciclos     - 12814
+Total instruções - 3303
+CPI              - 3.88
+MIPS             - 257
+Tempo de ciclo   - 1.00 ns
+Tempo de CPU     - 12814 ns
+BPB Sucess rate  - 29.97%
