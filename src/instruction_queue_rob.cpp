@@ -33,6 +33,7 @@ void instruction_queue_rob::main()
         {
             if(pc)
                 cat.at(pc-1).select(false);
+
             cat.at(pc).select(true,true);
             cat.at(pc).text(ISS,"");
             cat.at(pc).text(EXEC,"");
@@ -40,7 +41,12 @@ void instruction_queue_rob::main()
             wait(SC_ZERO_TIME);
             wait(SC_ZERO_TIME);
             wait(SC_ZERO_TIME);
-            out->write(instruct_queue[pc].instruction + " " + std::to_string(pc));
+            // go to issue_control_rob
+            // Instructions + current_pc + pc_original_instruction
+            out->write( instruct_queue[pc].instruction + " " +
+                        std::to_string(pc) + " " +
+                        std::to_string( instruct_queue[pc].pc ) );
+
             pc++;
             wait(SC_ZERO_TIME);
             cat.at(pc-1).text(ISS,"X");
@@ -57,12 +63,18 @@ void instruction_queue_rob::leitura_rob()
     int offset;
     in_rob->read(p);
     ord = instruction_split(p);
-    index = std::stoi(ord[1])-1;
+    index = std::stoi(ord[1])-1; // ROB position
+
     if(ord[0] == "R") //reverter salto incorreto
     {
         instructions.at(0).at(pc-1).select(false);
-        replace_instructions(last_pc[index]-1,index);
-        pc = last_pc[index]-1;
+        // replace_instructions(last_pc[index]-1,index);
+        // pc = last_pc[index] - 1;
+
+        // removed -1 because bug: branch instruction was issued twice.
+        replace_instructions( last_pc[index] ,index );
+        pc = last_pc[index];
+
         instruct_queue = last_instr[index];
     }
     else if(ord[0] == "S" && ord.size() == 3) //realiza salto (especulado) e armazena informacoes pre-salto
@@ -70,10 +82,14 @@ void instruction_queue_rob::leitura_rob()
         last_instr[index] = instruct_queue;
         last_pc[index] = pc;
         vector<instr_q> new_instructions_vec;
+
         offset = std::stoi(ord[2]);
+
         unsigned int original_pc = instruct_queue[pc-1].pc;
+
         for(unsigned int i = original_pc+offset ; i < original_instruct.size() ; i++)
             new_instructions_vec.push_back({original_instruct[i],i});
+
         add_instructions(pc,new_instructions_vec);
     }
     else if(ord[0] == "S")

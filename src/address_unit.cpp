@@ -24,6 +24,15 @@ rst_tam(rst_tm)
 
 void address_unit::leitura_issue()
 {
+  /* Example input
+     LD R6,0(R3) 3 2 4 0
+     instruction - LD R6,0(R3)
+     general_pc - 3
+     original_pc - 2
+     rob position - 4
+     rst_pos - 0
+     {"LD", "R6", "0(R3)", "3", "211", "4", "0"}
+     */
     bool store;
     bool check_value;
     int value;
@@ -35,7 +44,7 @@ void address_unit::leitura_issue()
         mem_ord = offset_split(ord[2]);
         a = std::stoi(mem_ord[0]);
         instr_pos = std::stoi(ord[3]);
-        rob_pos = std::stoi(ord[4]);
+        rob_pos = std::stoi(ord[5]);
         regst = ask_status(true,mem_ord[1]);
         check_value = false;
         if(regst != 0)
@@ -45,25 +54,35 @@ void address_unit::leitura_issue()
             {
                 value = std::stof(check);
                 check_value = true;
-            }   
+            }
         }
         if(ord[0].at(0) == 'S')
             store = true;
         else
             store = false;
+
         if(!store)
         {
-            rst_pos = std::stoi(ord[5]);
+            rst_pos = std::stoi(ord[6]);
             res_station_table.at(rst_pos+rst_tam).text(A,mem_ord[0]);
         }
         else
             rst_pos = -1;
+
         if(regst == 0 || check_value == true)
         {
             if(check_value == false)
                 value = ask_value(mem_ord[1]);
             wait(SC_ZERO_TIME);
-            instruct_table.at(instr_pos).text(EXEC,"X");
+            // wait(1,SC_NS);
+            // if ( (unsigned) instr_pos >= instruct_table.size() ) // very very ugly
+              // instr_pos = instruct_table.size() - 1;
+            try {
+                instruct_table.at(instr_pos).text(EXEC,"X");
+            }
+            catch (...) {}
+
+
             a += value;
             if(store)
             {
@@ -103,6 +122,7 @@ void address_unit::leitura_cdb()
             {
                 offset_buff[i].a+= std::stoi(ord_c[1]);
                 wait(SC_ZERO_TIME);
+                // wait(1,SC_NS);
                 instruct_table.at(offset_buff[i].instr_pos).text(EXEC,"X");
                 if(offset_buff[i].store)
                 {
@@ -209,7 +229,9 @@ void address_unit::check_loads()
     for(unsigned i = 0 ; i < offset_buff.size() && !offset_buff[i].store ; i++)
         if(offset_buff[i].addr_calc)
         {
-            instruct_table.at(offset_buff[i].instr_pos).text(EXEC,"X");
+            if ( (unsigned) offset_buff[i].instr_pos < instruct_table.size() ) // very very ugly
+              instruct_table.at(offset_buff[i].instr_pos).text(EXEC,"X");
+
             if(addr_queue.empty())
                 addr_queue_event.notify(delay_time,SC_NS);
             addr_queue.push(offset_buff[i]);

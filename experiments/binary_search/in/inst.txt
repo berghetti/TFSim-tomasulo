@@ -1,0 +1,45 @@
+//************************************************************************
+// Busca binária                                                        **
+// Código MIPS                                                          **
+//                                                                      **
+//************************************************************************
+//nro de elementos
+LD R1 0(R0)
+//valor alvo
+LD R5 40(R0)
+//endereço de inicio, estrutura: nel, el0, el1..., eln-1
+DADDI R2 R0 1
+//constantes visto que não tem shifts implementados
+DADDI R31 R0 1
+DADDI R30 R0 2
+//registrador de retorno (posição i no vetor onde a[i]=alvo, -1 caso contrário)
+DADD R0 R0 R0
+DADDI R10 R0 -1
+//endereço de fim
+DADDI R3 R1 0
+DSUB R3 R3 R31
+DADD R3 R3 R2
+//pos
+DADD R4 R2 R3
+DDIV R4 R4 R30
+//controle do laço: qdo r6 <0 (ini>fim) então saia do laço
+DSUB R6 R3 R2
+BLTZ R6 14
+DSUB R3 R3 R31
+//a[pos]
+LD R7 0(R4)
+BEQ R7 R5 8 //encontrou arrumar o endereço
+DSUB R7 R7 R5
+//if a[pos] > target
+BGEZ R7 2
+//else
+DADD R2 R0 R4
+DADD R3 R0 R4
+DADD R4 R2 R3
+DDIV R4 R4 R30
+BGEZ R6 -11
+//JUMP BACK
+//BEQ R0 R0 -4
+DADD R10 R0 R4
+SD R10 499(R0)
+DADD R0 R0 R0

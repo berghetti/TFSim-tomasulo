@@ -1,0 +1,48 @@
+//
+// r5 - matrix
+// r6 - matrix lines
+// r7 - matrix columns
+// r8 - value ( address ) to end
+// void matrix_search( int *r5[], int r6, int r7, int r8 )
+// {
+//   int r1 = 0;
+//
+//   for ( int r11 = 0; r11 != r6; r11++ )
+//     for ( int r12 = 0; r12 != r7; r12++ )
+//         if ( &r5[r11][r12] == r8 )
+//            goto END;
+// END:
+//    r1 = 1;
+// }
+//
+//
+DADDI R1 R0 0
+DADDI R11 R0 0
+DADDI R12 R0 0
+//
+BEQ R11 R6 15
+BEQ R12 R7 14
+// loop
+DMUL R22 R11 R7
+DADD R21 R22 R12
+DADD R20 R21 R5
+// o correto seria comparar com o valor na memoria
+// mas o simulador esta travando ao usar a instrução load.
+// afim de testar o preditor em uma estrutura de matriz
+// o ponto de parada é feito contra o "endereço" passado em r8
+// e não mais o valor que está nesse endereço.
+// LD R24 0(R20)
+BEQ R20 R8 7
+// col loop
+DADDI R12 R12 1
+BNE R12 R7 -5
+DADDI R12 R0 0
+// line loop
+DADDI R11 R11 1
+BNE R11 R6 -8
+//
+BEQ R0 R0 3
+//
+DADDI R0 R0 0
+DADDI R1 R0 1
+DADD R0 R0 R0

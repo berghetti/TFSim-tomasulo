@@ -1,7 +1,7 @@
 #include "sl_buffer_rob.hpp"
 #include "general.hpp"
 
-sl_buffer_rob::sl_buffer_rob(sc_module_name name,unsigned int t,unsigned int t_outros,map<string,int> instruct_time, nana::listbox &lsbox, nana::listbox::cat_proxy ct, nana::listbox::cat_proxy r_ct): 
+sl_buffer_rob::sl_buffer_rob(sc_module_name name,unsigned int t,unsigned int t_outros,map<string,int> instruct_time, nana::listbox &lsbox, nana::listbox::cat_proxy ct, nana::listbox::cat_proxy r_ct):
 sc_module(name),
 tam(t),
 tam_outros(t_outros),
@@ -41,6 +41,13 @@ sl_buffer_rob::~sl_buffer_rob()
 
 void sl_buffer_rob::leitura_issue()
 {
+   /* Example input
+      LD R6,0(R3) 3 1 4
+      instruction LD R6,0(R3)
+      general_pc 3 -
+      original_pc 1
+      rob position 4
+      ord = {"LD", "R6", "0(R3)", "3", "1", "4"} */
     string p;
     vector<string> ord;
     int pos,rob_pos;
@@ -49,8 +56,8 @@ void sl_buffer_rob::leitura_issue()
     {
         in_issue->nb_read(p);
         ord = instruction_split(p);
-        cout << "Issue da instrução " << ord[0] << " no ciclo " << sc_time_stamp() << " para " << ptrs[pos]->type_name << endl << flush;
         pos = busy_check();
+        cout << "Issue da instrução " << ord[0] << " no ciclo " << sc_time_stamp() << " para " << ptrs[pos]->type_name << endl << flush;
         while(pos == -1)
         {
             cout << "Todas as estacoes ocupadas para a instrucao " << p << " no ciclo " << sc_time_stamp() << endl << flush;
@@ -61,7 +68,7 @@ void sl_buffer_rob::leitura_issue()
         in_issue->notify();
         out_issue->write(std::to_string(pos));
         cout << "Instrução " << p << " conseguiu espaço para usar uma estação de reserva em " << sc_time_stamp() << endl << flush;
-        rob_pos = std::stoi(ord[4]);
+        rob_pos = std::stoi(ord[5]); // TODO: check
         ptrs[pos]->op = ord[0];
         ptrs[pos]->instr_pos = std::stoi(ord[3]);
         cat.at(pos+tam_outros).text(OP,ord[0]);

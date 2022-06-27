@@ -49,6 +49,13 @@ void res_vector_rob::leitura_issue()
     auto cat = table.at(0);
     while(true)
     {
+        /* Example input,
+           DADDI R1,R1,1 0 0 1
+           instruction - DADDI R1,R1,1
+           current pc general - 0
+           original pc instructions - 0
+           rob position - 1*/
+
         in_issue->nb_read(p);
         ord = instruction_split(p);
         pos = busy_check(ord[0]);
@@ -59,9 +66,11 @@ void res_vector_rob::leitura_issue()
             wait(1,SC_NS);
             pos = busy_check(ord[0]);
         }
+
         in_issue->notify();
         cout << "Issue da instrução " << ord[0] << " no ciclo " << sc_time_stamp() << " para " << rs[pos]->type_name << endl << flush;
-        rob_pos = std::stoi(ord[5]);
+        rob_pos = std::stoi(ord[ ord.size() - 1 ]); // last position
+
         rs[pos]->op = ord[0];
         rs[pos]->fp = ord[0].at(0) == 'F';
         rs[pos]->dest = rob_pos;
@@ -94,13 +103,14 @@ void res_vector_rob::leitura_issue()
             rs[pos]->qj = regst;
             cat.at(pos).text(QJ,std::to_string(regst));
         }
+
         if(ord[0].at(ord[0].size()-1) == 'I')
         {
             value = std::stof(ord[3]);
             rs[pos]->vk = value;
             cat.at(pos).text(VK,std::to_string((int)value));
         }
-        else 
+        else
         {
             check_value = false;
             regst = ask_status(ord[3]);
@@ -113,7 +123,7 @@ void res_vector_rob::leitura_issue()
                     check_value = true;
                 }
             }
-                    
+
             if(regst == 0 || check_value == true)
             {
                 if(check_value == false)

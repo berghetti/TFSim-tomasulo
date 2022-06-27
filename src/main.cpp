@@ -16,6 +16,8 @@
 #include <string>
 #include <stdexcept>
 
+#include "bpb.h"
+
 using std::string;
 using std::vector;
 using std::map;
@@ -26,11 +28,21 @@ using std::fstream;
 #define N_RS_MUL 2
 #define N_RS_LS 2
 
+<<<<<<< HEAD
 float
 predictor_get_hit_rate( void );
 
 void dump_regs(nana::listbox::cat_proxy reg_gui, nana::grid &memory);
 string get_file_name(string path);
+=======
+#ifndef USE_BPB
+float
+predictor_get_hit_rate( void );
+#endif
+
+void dump_regs(nana::listbox::cat_proxy reg_gui, nana::grid &memory, std::string regi_path, std::string regf_path, std::string mem_path);
+string get_file_name(string path, int idx=1);
+>>>>>>> branch
 bool diff(nana::listbox::cat_proxy reg_gui, nana::grid &memory, string regi_path, string regpf_path, string mem_path);
 
 void show_metrics( top & );
@@ -482,7 +494,7 @@ int sc_main(int argc, char *argv[])
                     inFile.open(argv[k+1]);
 
                     regi_file_name = argv[k+1];
-                    //cout << "valor: " << get_file_name(regi_file_name) <<endl;
+                    cout << "valor: " << get_file_name(regi_file_name) << " " << regi_file_name  <<endl;
 
                     int value;
                     i = 0;
@@ -656,10 +668,10 @@ int sc_main(int argc, char *argv[])
               sc_start();
         }
 
-        dump_regs(reg_gui, memory);
+        dump_regs(reg_gui, memory, regi_file_name, regfp_file_name, memory_file_name);
 
         try{
-            diff(reg_gui, memory, "out/"+get_file_name(regi_file_name), "out/"+get_file_name(regfp_file_name), "out/"+get_file_name(memory_file_name));
+            diff(reg_gui, memory, regi_file_name, get_file_name(regfp_file_name), get_file_name(memory_file_name));
         }
         catch(int ex){
             show_message("Erro!", "Impossível executar comparação de corretude de saída. Arquivos de comparação inexistentes. Por favor corrija o problema e execute novamente.");
@@ -690,16 +702,26 @@ int sc_main(int argc, char *argv[])
  * @param reg_gui nana listbox handler
  * @param memory nana grid
  */
-void dump_regs(nana::listbox::cat_proxy reg_gui, nana::grid &memory){
+void dump_regs(nana::listbox::cat_proxy reg_gui, nana::grid &memory, std::string regi_path, std::string regf_path, std::string mem_path){
     int i;
     ofstream out_file;
+    std::string new_path;
 
-    if(! std::filesystem::exists("result/")){
-        cout << "criando diretório result" <<endl;
-        std::filesystem::create_directory("result/");
+    string exp_name = get_file_name(regi_path,3);
+    string fname = get_file_name(regi_path);
+    string::size_type loc = regi_path.find( exp_name, 0 );
+
+    if (loc !=string::npos){
+        new_path = "experiments/"+exp_name+"/dump/";
     }
 
-    out_file.open("result/reg_status.txt");
+    if(! std::filesystem::exists(new_path)){
+        cout << "criando diretório: " << new_path <<endl;
+        std::filesystem::create_directory(new_path);
+    }
+
+    cout << "Experimento: " << exp_name <<endl;
+    out_file.open(new_path+fname);
 
     cout << "Salvando os registradores e estado da memória" << endl;
 
@@ -710,15 +732,18 @@ void dump_regs(nana::listbox::cat_proxy reg_gui, nana::grid &memory){
     out_file.close();
 
 
-    out_file.open("result/reg_status_fp.txt");
-    for(i=0; i< 31; i++){
-        out_file << std::stof(reg_gui.at(i).text(4)) << " ";
+    fname = get_file_name(regf_path);
+    if (fname!="NA"){
+        out_file.open(new_path+fname);
+        for(i=0; i< 31; i++){
+            out_file << std::stof(reg_gui.at(i).text(4)) << " ";
+        }
+        out_file << reg_gui.at(31).text(4);
+        out_file.close();
     }
-    out_file << reg_gui.at(31).text(4);
-    out_file.close();
 
-
-    out_file.open("result/mem_status.txt");
+    fname = get_file_name(mem_path);
+    out_file.open(new_path+fname);
     for(i=0; i< 499; i++){
         out_file << memory.Get(i) << " ";
     }
@@ -733,9 +758,10 @@ void dump_regs(nana::listbox::cat_proxy reg_gui, nana::grid &memory){
  * @brief Get the file name object removing its path.
  *
  * @param path relative path from where a reg/mem file is stored
+ * @param idx defines the relative position of path to return from the end to the beginning 
  * @return string
  */
-string get_file_name(string path){
+string get_file_name(string path, int idx){
     std::stringstream orig(path);
     string substr;
     std::vector<string> vec;
@@ -744,24 +770,47 @@ string get_file_name(string path){
         vec.push_back(substr);
     }
 
-    return vec.at(vec.size()-1);
+    return vec.at(vec.size()-idx);
 }
 
-
+/**
+ * @brief Compares registers and memory post processing data with expected values. Expected values must be stored in out subdir. Prints the inconsistency, if any.
+ * 
+ * @param reg_gui GUI register panel
+ * @param memory  GUI memory data panel
+ * @param regi_path Relative path to integer registers input file location.
+ * @param regfp_path Relative path to floating point registers input file location.
+ * @param mem_path Relative path to memory input location.
+ * @return true 
+ * @return false 
+ */
 bool diff(nana::listbox::cat_proxy reg_gui, nana::grid &memory, string regi_path, string regfp_path, string mem_path){
     ifstream in_file;
     int value, i=0;
     std::map<string, std::vector<int>> wrong_values;
 
+    std::string new_path;
+
+    string exp_name = get_file_name(regi_path,3);
+    string::size_type loc = regi_path.find( exp_name, 0 );
+
+    if (loc !=string::npos){
+        new_path = "experiments/"+exp_name+"/dump/";
+    }
+
+    string new_regi = new_path+get_file_name(regi_path);
+    string new_regf = new_path+get_file_name(regfp_path);
+    string new_mem = new_path+get_file_name(mem_path);
+
     cout << "Iniciando comparação com os arquivos de saída:"<< endl;
-    cout << regi_path<<endl;
-    cout << regfp_path<< endl;
-    cout << mem_path<<endl;
+    cout << new_regi<<endl;
+    cout << new_regf<< endl;
+    cout << new_mem<<endl;
 
     //só deve lançar erro caso o arquivo fonte tenha sido informado, mas seu equivalente de caso de teste não tenha sido encontrado.
-    if(! ( (std::filesystem::exists(regi_path)  || get_file_name(regi_path) ==  "NA") &&
-           (std::filesystem::exists(regfp_path) || get_file_name(regfp_path) == "NA") &&
-           (std::filesystem::exists(mem_path)   || get_file_name(mem_path) == "NA") )){
+    if(! ( (std::filesystem::exists(new_regi)  || get_file_name(new_regi) ==  "NA") &&
+           (std::filesystem::exists(new_regf) || get_file_name(new_regf) == "NA") &&
+           (std::filesystem::exists(new_mem)   || get_file_name(new_mem) == "NA") )){
         throw 1;
     }
 
@@ -845,6 +894,7 @@ void show_metrics( top & top )
   const float cycle_time = TO_NS( CYCLE_TIME( cpu_freq ) );
   const unsigned int cpu_time = total_cycles * cycle_time;
 
+  cout << std::fixed;
   cout <<
   "\n\n"
   "Metricas:\n" <<
@@ -855,6 +905,14 @@ void show_metrics( top & top )
   "MIPS             - " << mips << "\n" <<
   "Tempo de ciclo   - " << std::setprecision(2) << cycle_time << " ns\n" <<
   "Tempo de CPU     - " << cpu_time << " ns\n"
+<<<<<<< HEAD
   "Prediction Sucess rate  - " << std::setprecision(2) << predictor_get_hit_rate() << "%"
+=======
+#ifndef USE_BPB
+  "Prediction Sucess rate  - " << std::setprecision(2) << predictor_get_hit_rate() << "%"
+#else
+  "BPB Sucess rate  - " << std::setprecision(2) << bpb_get_hit_rate() << "%"
+#endif
+>>>>>>> branch
    << endl;
 }

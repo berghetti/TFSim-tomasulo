@@ -22,7 +22,7 @@ void issue_control_rob::issue_select()
     while(true)
     {
         in->nb_read(p);
-        out_rob->write(p);
+        out_rob->write(p); // go to reorder_buffer::leitura_issue()
         in_rob->read(rob_pos);
         ord = instruction_split(p);
         switch(res_type[ord[0]])
@@ -49,4 +49,3 @@ void issue_control_rob::issue_select()
         wait();
     }
 }
-

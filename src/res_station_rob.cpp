@@ -37,6 +37,7 @@ void res_station_rob::exec()
             cout << "Execuçao da instruçao " << op << " iniciada no ciclo " << sc_time_stamp() << " em " << name() << endl << flush;
             if(!isMemory) //Se for store ou load, ja foi setado pelo address_unit
                 instr_queue_gui.at(instr_pos).text(EXEC,"X");
+
             rob_gui.at(dest-1).text(STATE,"Execute");
             if(op.substr(0,4) == "DADD")
                 res = vj + vk;
@@ -87,7 +88,16 @@ void res_station_rob::exec()
         }
         wait(SC_ZERO_TIME);
         if(!isFlushed)
-            instr_queue_gui.at(instr_pos).text(WRITE,"X");
+          {
+            // very ugly
+            if ( instr_pos < instr_queue_gui.size() )
+            // try {
+              instr_queue_gui.at(instr_pos).text(WRITE,"X");
+            // }
+            // catch (...){}
+
+          }
+
         Busy = isFlushed = false;
         cout << "estacao " << id << " liberada no ciclo " << sc_time_stamp() << endl << flush;
         clean_item(); //Limpa a tabela na interface grafica
@@ -110,7 +120,7 @@ void res_station_rob::leitura()
             vj = std::stoi(ord[1]);
             table_item->text(VJ,ord[1]);
             table_item->text(QJ,"");
-            cout << "Instrucao " << op << " conseguiu o valor " << vj << " da RS_" << rs_source << endl << flush; 
+            cout << "Instrucao " << op << " conseguiu o valor " << vj << " da RS_" << rs_source << endl << flush;
             val_enc.notify(1,SC_NS);
         }
         if(qk == rs_source)
@@ -119,7 +129,7 @@ void res_station_rob::leitura()
             vk = std::stoi(ord[1]);
             table_item->text(VK,ord[1]);
             table_item->text(QK,"");
-            cout << "Instrucao " << op << " conseguiu o valor " << vk << " da RS_" << rs_source << endl << flush; 
+            cout << "Instrucao " << op << " conseguiu o valor " << vk << " da RS_" << rs_source << endl << flush;
             val_enc.notify(1,SC_NS);
         }
     }
