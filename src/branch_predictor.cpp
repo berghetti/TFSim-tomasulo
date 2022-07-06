@@ -6,7 +6,7 @@ static unsigned int tot_hit = 0;
 branch_predictor::branch_predictor(unsigned int t): n_bits(t)
 {
     max = (1<<n_bits)-1;
-    state = 0; // initial state not taken
+    state = 1; // initial state not taken
 }
 
 bool branch_predictor::predict()
