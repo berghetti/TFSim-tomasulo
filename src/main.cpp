@@ -787,7 +787,7 @@ bool diff(nana::listbox::cat_proxy reg_gui, nana::grid &memory, string regi_path
     string::size_type loc = regi_path.find( exp_name, 0 );
 
     if (loc !=string::npos){
-        new_path = "experiments/"+exp_name+"/dump/";
+        new_path = "experiments/"+exp_name+"/out/";
     }
 
     string new_regi = new_path+get_file_name(regi_path);
@@ -806,7 +806,7 @@ bool diff(nana::listbox::cat_proxy reg_gui, nana::grid &memory, string regi_path
         throw 1;
     }
 
-    in_file.open(regi_path);
+    in_file.open(new_regi);
 
     wrong_values.insert( std::pair<string, std::vector<int>>("regi", std::vector<int>()) );
     wrong_values.insert( std::pair<string, std::vector<int>>("regpf", std::vector<int>()) );
@@ -814,6 +814,7 @@ bool diff(nana::listbox::cat_proxy reg_gui, nana::grid &memory, string regi_path
 
     if( get_file_name(regi_path) != "NA" ){
         for(i=0; in_file >> value  && i < 32;i++){
+            cout << "debug: i: "<<i<<", value:" << value <<", "<< stoi(reg_gui.at(i).text(1)) <<" before"<< reg_gui.at(i).text(1) << endl;
             if(value != stoi(reg_gui.at(i).text(1)) ){
                 wrong_values.at("regi").push_back(i);
             }
@@ -822,7 +823,7 @@ bool diff(nana::listbox::cat_proxy reg_gui, nana::grid &memory, string regi_path
     in_file.close();
 
     if(get_file_name(regfp_path) != "NA"){
-        in_file.open(regfp_path);
+        in_file.open(new_mem);
         for(i=0; in_file >> value  && i < 32;i++){
             if(value != stof(reg_gui.at(i).text(4)) ){
                 wrong_values.at("regpf").push_back(i);
