@@ -28,13 +28,6 @@ using std::fstream;
 #define N_RS_MUL 2
 #define N_RS_LS 2
 
-<<<<<<< HEAD
-float
-predictor_get_hit_rate( void );
-
-void dump_regs(nana::listbox::cat_proxy reg_gui, nana::grid &memory);
-string get_file_name(string path);
-=======
 #ifndef USE_BPB
 float
 predictor_get_hit_rate( void );
@@ -42,7 +35,6 @@ predictor_get_hit_rate( void );
 
 void dump_regs(nana::listbox::cat_proxy reg_gui, nana::grid &memory, std::string regi_path, std::string regf_path, std::string mem_path);
 string get_file_name(string path, int idx=1);
->>>>>>> branch
 bool diff(nana::listbox::cat_proxy reg_gui, nana::grid &memory, string regi_path, string regpf_path, string mem_path);
 
 void show_metrics( top & );
@@ -758,7 +750,7 @@ void dump_regs(nana::listbox::cat_proxy reg_gui, nana::grid &memory, std::string
  * @brief Get the file name object removing its path.
  *
  * @param path relative path from where a reg/mem file is stored
- * @param idx defines the relative position of path to return from the end to the beginning 
+ * @param idx defines the relative position of path to return from the end to the beginning
  * @return string
  */
 string get_file_name(string path, int idx){
@@ -775,14 +767,14 @@ string get_file_name(string path, int idx){
 
 /**
  * @brief Compares registers and memory post processing data with expected values. Expected values must be stored in out subdir. Prints the inconsistency, if any.
- * 
+ *
  * @param reg_gui GUI register panel
  * @param memory  GUI memory data panel
  * @param regi_path Relative path to integer registers input file location.
  * @param regfp_path Relative path to floating point registers input file location.
  * @param mem_path Relative path to memory input location.
- * @return true 
- * @return false 
+ * @return true
+ * @return false
  */
 bool diff(nana::listbox::cat_proxy reg_gui, nana::grid &memory, string regi_path, string regfp_path, string mem_path){
     ifstream in_file;
@@ -905,14 +897,10 @@ void show_metrics( top & top )
   "MIPS             - " << mips << "\n" <<
   "Tempo de ciclo   - " << std::setprecision(2) << cycle_time << " ns\n" <<
   "Tempo de CPU     - " << cpu_time << " ns\n"
-<<<<<<< HEAD
-  "Prediction Sucess rate  - " << std::setprecision(2) << predictor_get_hit_rate() << "%"
-=======
 #ifndef USE_BPB
   "Prediction Sucess rate  - " << std::setprecision(2) << predictor_get_hit_rate() << "%"
 #else
   "BPB Sucess rate  - " << std::setprecision(2) << bpb_get_hit_rate() << "%"
 #endif
->>>>>>> branch
    << endl;
 }
