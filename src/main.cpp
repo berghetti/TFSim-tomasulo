@@ -814,7 +814,7 @@ bool diff(nana::listbox::cat_proxy reg_gui, nana::grid &memory, string regi_path
 
     if( get_file_name(regi_path) != "NA" ){
         for(i=0; in_file >> value  && i < 32;i++){
-            cout << "debug: i: "<<i<<", value:" << value <<", "<< stoi(reg_gui.at(i).text(1)) <<" before"<< reg_gui.at(i).text(1) << endl;
+            
             if(value != stoi(reg_gui.at(i).text(1)) ){
                 wrong_values.at("regi").push_back(i);
             }
